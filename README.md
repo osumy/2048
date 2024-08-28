@@ -1,2 +1,11 @@
-## 🎮 2048 Game (CLI)
+# 🎮 2048 Game (CLI)
+
+<!-- Badges -->
+<!-- Logo -->
+
+## 💡 Overview
+
+## 📝 Description
+
+
 
