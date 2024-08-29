@@ -23,7 +23,7 @@ This project is a terminal-based 📟 implementation of the popular 2048 game �
 <!-- Demo -->
 
 ## Table of Contents
-- [Description](https://github.com/osumy/2048/edit/readme/README.md#-description)
+- [Description](https://github.com/osumy/2048/tree/readme#-description)
 - [License](#License)
 
 ## 📝 Description
