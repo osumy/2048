@@ -28,7 +28,7 @@ This project is a terminal-based 📟 implementation of the popular 2048 game �
 - [Usage](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#usage)
 - [License](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#license)
 - [Contact](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#contact)
-- (Acknowledgments)[https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#-acknowledgments]
+- [Acknowledgments](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#-acknowledgments)
 
 ## 📝 Description
 
