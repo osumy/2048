@@ -11,9 +11,8 @@
 
 
 <!-- Logo -->
-<br />
 <div align="center">
-  <img src="logo.png" alt="2048" width="256" height="256">
+  <img src="logo.png" alt="2048" width="512" height="512">
 </div>
 
 ## 💡 Overview
