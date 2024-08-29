@@ -16,7 +16,7 @@
 </div>
 
 ## 💡 Overview
-This project is a terminal-based 📟 implementation of the popular 2048 game 🕹️, developed using C++. Experience the classic puzzle challenge as you combine tiles and reach the elusive 2048 tile  (and maybe more?! :)), all from your command line!
+This project is a terminal-based 📟 implementation of the popular 2048 game 🕹️, developed using C++. Experience the classic puzzle challenge as you combine tiles and reach the elusive 2048 tile, all from your command line!
 
 
 ## 📝 Description
