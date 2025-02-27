@@ -3,27 +3,27 @@
 #include <stdlib.h>
 #include <ctime>
 #include <cstdlib>
-#include <conio.h>
-#include <windows.h>
+//#include <conio.h>
+#include <chrono>
+#include <thread>
 #include <string>
 #include <cmath>
 #include <fstream>
-#include <thread>
 
 using namespace std;
 
-struct Player {  // a struct for player data
+struct Player {  // player data
 	string name;
 	int score;
 	int n;
 	int** board;
 };
 
-//////////////////////////
+///////////////////////////////////
 // Timer
-//////////////////////////
+///////////////////////////////////
 
-struct Timer{
+struct Timer {
     int h;
     int m;
     int s;
@@ -32,11 +32,11 @@ struct Timer{
 
 Timer t;
 
-// h:houre  m:minute s:second 
-void timer(){
+// h:hour  m:minute s:second 
+void timer() {
     while (true)
     {
-        Sleep(999);
+        this_thread::sleep_for(999ms);
     
         if (t.s > 0)
             t.s--;
@@ -88,33 +88,33 @@ int main(){
         {
         case 72:
             changeChoice(choice, 'u');
-            Beep(260, 500);
+            //Beep(260, 500);
             break;
         case 119:
             changeChoice(choice, 'u');
-            Beep(260, 500);
+            //Beep(260, 500);
             break;
         case 80:
             changeChoice(choice, 'd');
-            Beep(260, 500);
+            //Beep(260, 500);
             break;
         case 115:
             changeChoice(choice, 'd');
-            Beep(260, 500);
+            //Beep(260, 500);
             break;
         case 13:
-            Beep(300, 500);
+            //Beep(300, 500);
             if (choice == 'e')
                 return 0;
             pressEnter(choice);
-            Beep(260, 500);
+            //Beep(260, 500);
             break;
         case 32:
-            Beep(300, 500);
+            //Beep(300, 500);
             if (choice == 'e')
                 return 0;
             pressEnter(choice);
-            Beep(260, 500);
+            //Beep(260, 500);
             break;
         default:
             helpMenu = true;
@@ -412,7 +412,7 @@ void preparePlayer(){
         string name;
         getline(cin, name);
         int len = name.length();
-        Beep(260, 500);
+        //Beep(260, 500);
         if (len != 0){
             pl.name = name;
             break;
@@ -426,7 +426,7 @@ void preparePlayer(){
     {
         cout << endl << "\u001b[93m >>\u001b[36m Please Enter the game board size: \u001b[96m"; // Entering n (n is the size of game matrix)
         cin >> n;
-        Beep(260, 500);
+        //Beep(260, 500);
         if (n < 2)
             cout << "\u001b[91m INVALID!" << endl;
     }
@@ -443,17 +443,17 @@ void preparePlayer(){
     cout << "(Press b to return to the menu)" << endl << endl;
     cout << "Press any key to continue...";
     getch();
-    Beep(260, 500);
+    //Beep(260, 500);
     cout << endl << endl;
 
     // loading...
     cout << "\u001b[92m Loading";
     for (int i = 0; i < 3; i++) {
-        Sleep(200);
+        this_thread::sleep_for(200ms);
         cout << ".";
     }
 
-    Sleep(300);
+    this_thread::sleep_for(300ms);
     system("cls");
 
     prepareGameBoard();
@@ -610,7 +610,7 @@ void game(){
         if (t.TSU){
             system("cls");
             cout << "\u001b[91m Game Over";
-            Sleep(1000);
+            this_thread::sleep_for(1000ms);
             TerminateThread(timerThread.native_handle(), 1);
             timerThread.detach();
             return;
@@ -630,7 +630,7 @@ void game(){
         {
         case 'w':
             mUp(pl.board, pl.score, pl.n);
-            Beep(260, 300);
+            //Beep(260, 300);
             if (zeroFinder() > 0 && !isEqual(pl.board, temp))
                 randNumGen();
             break;
@@ -1016,7 +1016,7 @@ int printLeaderBoardMenu(Player* players, int count){
     cout << endl << "\u001b[93m >> ";
     string ch;
     cin >> ch;
-    Beep(300, 500);
+    //Beep(300, 500);
     return stoi(ch);
 }
 
