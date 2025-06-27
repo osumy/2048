@@ -13,7 +13,7 @@
 
 <!-- Logo -->
 <div align="center">
-  <img src="2048.png" alt="2048 Game Screenshot" width=512 height=512>
+  <img src="2048.png" alt="2048 Game Screenshot" width=300 height=300>
 </div>
 
 ## 💡 Overview
