@@ -1,8 +1,10 @@
-﻿# Build outputs
+# Build outputs
 *.exe
 *.o
 *.obj
 *.out
+*.zip
+*.tar.gz
 
 # CMake
 build/
