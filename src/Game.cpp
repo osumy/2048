@@ -87,8 +87,11 @@ void Game::preparePlayer() {
         std::string name;
         std::getline(std::cin, name);
         std::cout << Theme::reset();
-        if (!name.empty()) {
-            m_playerName = name;
+
+        size_t start = name.find_first_not_of(" \t\r\n");
+        size_t end = name.find_last_not_of(" \t\r\n");
+        if (start != std::string::npos && end != std::string::npos) {
+            m_playerName = name.substr(start, end - start + 1);
             break;
         }
         std::cout << "  " << Theme::fg(Theme::NEON_RED) << "⚠ Name cannot be empty! Please try again.\n" << Theme::reset();
@@ -117,7 +120,10 @@ void Game::preparePlayer() {
     m_boardSize = n;
 
     UI::renderHowToPlay();
-    _getch();
+    int ch = _getch();
+    if (ch == 0 || ch == 224 || ch == -32) {
+        _getch();
+    }
 
     UI::resetScreen();
 }
@@ -251,5 +257,8 @@ void Game::showLeaderboard() {
     int selectedSize = UI::renderSizeSelection(sizes);
     auto records = m_leaderboard.getRecordsForSize(selectedSize);
     UI::renderLeaderboard(records, selectedSize);
-    _getch();
+    int ch = _getch();
+    if (ch == 0 || ch == 224 || ch == -32) {
+        _getch();
+    }
 }

@@ -407,12 +407,14 @@ int renderSizeSelection(const std::vector<int>& playedSizes) {
     std::cout << out.str() << std::flush;
 
     std::string ch;
-    std::cin >> ch;
-    try {
-        return std::stoi(ch);
-    } catch (...) {
-        return 4;
+    if (std::getline(std::cin, ch)) {
+        try {
+            return std::stoi(ch);
+        } catch (...) {
+            return playedSizes.empty() ? 4 : playedSizes.front();
+        }
     }
+    return 4;
 }
 
 void renderLeaderboard(const std::vector<PlayerRecord>& records, int boardSize) {
