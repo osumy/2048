@@ -77,7 +77,7 @@ void Game::preparePlayer() {
     std::cout << "\n  " << Theme::fg(Theme::NEON_CYAN) << "╭─────────────────── PLAYER REGISTRATION ──────────────────╮" << Theme::reset() << "\n";
     std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset()
               << Theme::fg(Theme::NEON_AMBER) << Theme::bold()
-              << "               ENTER YOUR ARCADE TAG / NAME               "
+              << "                  ENTER YOUR PLAYER NAME                  "
               << Theme::reset() << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset() << "\n";
     std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "╰──────────────────────────────────────────────────────────╯" << Theme::reset() << "\n\n";
 
@@ -94,7 +94,7 @@ void Game::preparePlayer() {
             m_playerName = name.substr(start, end - start + 1);
             break;
         }
-        std::cout << "  " << Theme::fg(Theme::NEON_RED) << "⚠ Name cannot be empty! Please try again.\n" << Theme::reset();
+        std::cout << "  " << Theme::fg(Theme::NEON_RED) << "[!] Name cannot be empty! Please try again.\n" << Theme::reset();
     }
 
     int n = 0;
@@ -114,7 +114,7 @@ void Game::preparePlayer() {
             n = 0;
         }
         if (n < 2 || n > 8) {
-            std::cout << "  " << Theme::fg(Theme::NEON_RED) << "⚠ Invalid size! Please enter a number between 2 and 8.\n" << Theme::reset();
+            std::cout << "  " << Theme::fg(Theme::NEON_RED) << "[!] Invalid size! Please enter a number between 2 and 8.\n" << Theme::reset();
         }
     }
     m_boardSize = n;
