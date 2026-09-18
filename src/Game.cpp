@@ -2,8 +2,8 @@
 #include "UI.hpp"
 #include "Theme.hpp"
 #include "Audio.hpp"
+#include "Input.hpp"
 #include <iostream>
-#include <conio.h>
 #include <chrono>
 #include <thread>
 
@@ -21,57 +21,26 @@ void Game::run() {
         UI::clearScreen();
         UI::renderMainMenu(choice, showHelp);
 
-        int ch = _getch();
-        bool isExtended = false;
-        if (ch == 0 || ch == 224 || ch == -32) {
-            isExtended = true;
-            ch = _getch();
-        }
-
-        if (isExtended) {
-            switch (ch) {
-                case 72:  // Up arrow
-                    choice = (choice == 'n') ? 'e' : (choice == 'l' ? 'n' : 'l');
-                    break;
-                case 80:  // Down arrow
-                    choice = (choice == 'n') ? 'l' : (choice == 'l' ? 'e' : 'n');
-                    break;
+        Input::Event ev = Input::readKey();
+        if (ev.key == Input::Key::Up || (ev.key == Input::Key::Char && (ev.ch == 'w' || ev.ch == 'W'))) {
+            choice = (choice == 'n') ? 'e' : (choice == 'l' ? 'n' : 'l');
+        } else if (ev.key == Input::Key::Down || (ev.key == Input::Key::Char && (ev.ch == 's' || ev.ch == 'S'))) {
+            choice = (choice == 'n') ? 'l' : (choice == 'l' ? 'e' : 'n');
+        } else if (ev.key == Input::Key::Char && (ev.ch == 'm' || ev.ch == 'M')) {
+            Audio::toggleBGM();
+        } else if (ev.key == Input::Key::Enter || ev.key == Input::Key::Space) {
+            if (choice == 'e') {
+                UI::resetScreen();
+                return;
+            } else if (choice == 'n') {
+                startNewGame();
+                UI::resetScreen();
+            } else if (choice == 'l') {
+                showLeaderboard();
+                UI::resetScreen();
             }
         } else {
-            switch (ch) {
-                case 'w':
-                case 'W':
-                    choice = (choice == 'n') ? 'e' : (choice == 'l' ? 'n' : 'l');
-                    break;
-
-                case 's':
-                case 'S':
-                    choice = (choice == 'n') ? 'l' : (choice == 'l' ? 'e' : 'n');
-                    break;
-
-                case 'm':
-                case 'M':
-                    Audio::toggleBGM();
-                    break;
-
-                case 13:  // Enter
-                case 32:  // Space
-                    if (choice == 'e') {
-                        UI::resetScreen();
-                        return;
-                    } else if (choice == 'n') {
-                        startNewGame();
-                        UI::resetScreen();
-                    } else if (choice == 'l') {
-                        showLeaderboard();
-                        UI::resetScreen();
-                    }
-                    break;
-
-                default:
-                    showHelp = true;
-                    break;
-            }
+            showHelp = true;
         }
     }
 }
@@ -126,10 +95,7 @@ void Game::preparePlayer() {
     m_boardSize = n;
 
     UI::renderHowToPlay();
-    int ch = _getch();
-    if (ch == 0 || ch == 224 || ch == -32) {
-        _getch();
-    }
+    Input::waitAnyKey();
 
     UI::resetScreen();
 }
@@ -159,8 +125,8 @@ void Game::playGame() {
             Audio::playSFX(Audio::SFX::Win);
             UI::renderBoard(m_board, m_bestScore, m_timer.getRemainingFormatted());
             UI::renderWinnerPrompt();
-            char choose = _getch();
-            if (choose == 'n' || choose == 'N') {
+            Input::Event choose = Input::readKey();
+            if (choose.key == Input::Key::Char && (choose.ch == 'n' || choose.ch == 'N')) {
                 m_timer.stop();
                 return;
             }
@@ -172,7 +138,7 @@ void Game::playGame() {
             Audio::playSFX(Audio::SFX::GameOver);
             UI::renderBoard(m_board, m_bestScore, m_timer.getRemainingFormatted());
             UI::renderGameOver();
-            _getch();
+            Input::waitAnyKey();
             m_timer.stop();
             return;
         }
@@ -190,58 +156,23 @@ void Game::playGame() {
 
         UI::renderBoard(m_board, m_bestScore, m_timer.getRemainingFormatted());
 
-        int move = _getch();
-        bool isExtended = false;
-        if (move == 0 || move == 224 || move == -32) {
-            isExtended = true;
-            move = _getch();
-        }
-
+        Input::Event move = Input::readKey();
         int oldScore = m_board.getScore();
         bool moved = false;
 
-        if (isExtended) {
-            switch (move) {
-                case 72:  // Up arrow
-                    moved = m_board.move(Direction::Up);
-                    break;
-                case 80:  // Down arrow
-                    moved = m_board.move(Direction::Down);
-                    break;
-                case 75:  // Left arrow
-                    moved = m_board.move(Direction::Left);
-                    break;
-                case 77:  // Right arrow
-                    moved = m_board.move(Direction::Right);
-                    break;
-            }
-        } else {
-            switch (move) {
-                case 'w':
-                case 'W':
-                    moved = m_board.move(Direction::Up);
-                    break;
-                case 's':
-                case 'S':
-                    moved = m_board.move(Direction::Down);
-                    break;
-                case 'a':
-                case 'A':
-                    moved = m_board.move(Direction::Left);
-                    break;
-                case 'd':
-                case 'D':
-                    moved = m_board.move(Direction::Right);
-                    break;
-                case 'm':
-                case 'M':
-                    Audio::toggleBGM();
-                    break;
-                case 'b':
-                case 'B':
-                    m_timer.stop();
-                    return;
-            }
+        if (move.key == Input::Key::Up || (move.key == Input::Key::Char && (move.ch == 'w' || move.ch == 'W'))) {
+            moved = m_board.move(Direction::Up);
+        } else if (move.key == Input::Key::Down || (move.key == Input::Key::Char && (move.ch == 's' || move.ch == 'S'))) {
+            moved = m_board.move(Direction::Down);
+        } else if (move.key == Input::Key::Left || (move.key == Input::Key::Char && (move.ch == 'a' || move.ch == 'A'))) {
+            moved = m_board.move(Direction::Left);
+        } else if (move.key == Input::Key::Right || (move.key == Input::Key::Char && (move.ch == 'd' || move.ch == 'D'))) {
+            moved = m_board.move(Direction::Right);
+        } else if (move.key == Input::Key::Char && (move.ch == 'm' || move.ch == 'M')) {
+            Audio::toggleBGM();
+        } else if (move.key == Input::Key::Char && (move.ch == 'b' || move.ch == 'B')) {
+            m_timer.stop();
+            return;
         }
 
         if (moved) {
@@ -264,8 +195,5 @@ void Game::showLeaderboard() {
     int selectedSize = UI::renderSizeSelection(sizes);
     auto records = m_leaderboard.getRecordsForSize(selectedSize);
     UI::renderLeaderboard(records, selectedSize);
-    int ch = _getch();
-    if (ch == 0 || ch == 224 || ch == -32) {
-        _getch();
-    }
+    Input::waitAnyKey();
 }

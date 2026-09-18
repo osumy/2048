@@ -11,6 +11,9 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+#else
+#include <sys/ioctl.h>
+#include <unistd.h>
 #endif
 
 namespace UI {
@@ -23,6 +26,11 @@ int getTerminalWidth() {
         int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
         if (width > 0) return width;
         if (csbi.dwSize.X > 0) return csbi.dwSize.X;
+    }
+#else
+    struct winsize ws;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_col > 0) {
+        return ws.ws_col;
     }
 #endif
     return 80;
