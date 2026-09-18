@@ -254,12 +254,12 @@ void renderBoard(const Board& board, int bestScore, const std::string& remaining
 
     // Footer bar
     out << "  " << Theme::fg(Theme::FG_MUTED)
-        << "Controls: " << Theme::fg(Theme::NEON_CYAN) << "[W/A/S/D]"
-        << Theme::fg(Theme::FG_MUTED) << " or "
-        << Theme::fg(Theme::NEON_CYAN) << "[Arrows]"
+        << "Controls: " << Theme::fg(Theme::NEON_CYAN) << "[W/A/S/D / Arrows]"
         << Theme::fg(Theme::FG_MUTED) << " Slide  •  "
+        << Theme::fg(Theme::NEON_AMBER) << "[M]"
+        << Theme::fg(Theme::FG_MUTED) << " Music  •  "
         << Theme::fg(Theme::NEON_AMBER) << "[B]"
-        << Theme::fg(Theme::FG_MUTED) << " Exit to Menu"
+        << Theme::fg(Theme::FG_MUTED) << " Menu"
         << Theme::reset() << "         \n";
 
     std::cout << out.str() << std::flush;

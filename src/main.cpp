@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include "Theme.hpp"
+#include "Audio.hpp"
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
@@ -26,11 +27,13 @@ static void setupTerminal() {
 }
 
 static void restoreTerminal() {
+    Audio::shutdown();
     std::cout << Theme::showCursor() << Theme::reset() << std::endl;
 }
 
 int main() {
     setupTerminal();
+    Audio::init();
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     Game game;
@@ -39,4 +42,5 @@ int main() {
     restoreTerminal();
     return 0;
 }
+
 

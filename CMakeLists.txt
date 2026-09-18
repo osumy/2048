@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.20)
 
 project(2048
     VERSION 1.0.0
@@ -27,3 +27,8 @@ if(MSVC)
 else()
     target_compile_options(2048 PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+if(WIN32)
+    target_link_libraries(2048 PRIVATE winmm)
+endif()
+

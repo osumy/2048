@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include "UI.hpp"
 #include "Theme.hpp"
+#include "Audio.hpp"
 #include <iostream>
 #include <conio.h>
 #include <chrono>
@@ -21,40 +22,51 @@ void Game::run() {
         UI::renderMainMenu(choice, showHelp);
 
         int ch = _getch();
+        bool isExtended = false;
         if (ch == 0 || ch == 224 || ch == -32) {
+            isExtended = true;
             ch = _getch();
         }
 
-        switch (ch) {
-            case 72:  // Up arrow
-            case 'w':
-            case 'W':
-                choice = (choice == 'n') ? 'e' : (choice == 'l' ? 'n' : 'l');
-                break;
+        if (isExtended) {
+            switch (ch) {
+                case 72:  // Up arrow
+                    choice = (choice == 'n') ? 'e' : (choice == 'l' ? 'n' : 'l');
+                    break;
+                case 80:  // Down arrow
+                    choice = (choice == 'n') ? 'l' : (choice == 'l' ? 'e' : 'n');
+                    break;
+            }
+        } else {
+            switch (ch) {
+                case 'w':
+                case 'W':
+                    choice = (choice == 'n') ? 'e' : (choice == 'l' ? 'n' : 'l');
+                    break;
 
-            case 80:  // Down arrow
-            case 's':
-            case 'S':
-                choice = (choice == 'n') ? 'l' : (choice == 'l' ? 'e' : 'n');
-                break;
+                case 's':
+                case 'S':
+                    choice = (choice == 'n') ? 'l' : (choice == 'l' ? 'e' : 'n');
+                    break;
 
-            case 13:  // Enter
-            case 32:  // Space
-                if (choice == 'e') {
-                    UI::resetScreen();
-                    return;
-                } else if (choice == 'n') {
-                    startNewGame();
-                    UI::resetScreen();
-                } else if (choice == 'l') {
-                    showLeaderboard();
-                    UI::resetScreen();
-                }
-                break;
+                case 13:  // Enter
+                case 32:  // Space
+                    if (choice == 'e') {
+                        UI::resetScreen();
+                        return;
+                    } else if (choice == 'n') {
+                        startNewGame();
+                        UI::resetScreen();
+                    } else if (choice == 'l') {
+                        showLeaderboard();
+                        UI::resetScreen();
+                    }
+                    break;
 
-            default:
-                showHelp = true;
-                break;
+                default:
+                    showHelp = true;
+                    break;
+            }
         }
     }
 }
@@ -126,17 +138,20 @@ void Game::startNewGame() {
 void Game::playGame() {
     UI::resetScreen();
     m_timer.start(5, 0);
+    Audio::startBGM();
     bool askedContinue = false;
 
     while (true) {
         UI::clearScreen();
 
         if (!askedContinue && m_board.getBiggestTile() >= 2048) {
+            Audio::playSFX(Audio::SFX::Win);
             UI::renderBoard(m_board, m_bestScore, m_timer.getRemainingFormatted());
             UI::renderWinnerPrompt();
             char choose = _getch();
             if (choose == 'n' || choose == 'N') {
                 m_timer.stop();
+                Audio::stopBGM();
                 return;
             }
             askedContinue = true;
@@ -144,6 +159,8 @@ void Game::playGame() {
         }
 
         if (m_board.isFull() && !m_board.canMove()) {
+            Audio::stopBGM();
+            Audio::playSFX(Audio::SFX::GameOver);
             UI::renderBoard(m_board, m_bestScore, m_timer.getRemainingFormatted());
             UI::renderGameOver();
             _getch();
@@ -152,6 +169,8 @@ void Game::playGame() {
         }
 
         if (m_timer.isTimeUp()) {
+            Audio::stopBGM();
+            Audio::playSFX(Audio::SFX::GameOver);
             UI::clearScreen();
             std::cout << "\n  " << Theme::fg(Theme::NEON_RED) << Theme::bold()
                       << "⌛ TIME EXPIRED! GAME OVER" << Theme::reset() << "\n";
@@ -163,35 +182,66 @@ void Game::playGame() {
         UI::renderBoard(m_board, m_bestScore, m_timer.getRemainingFormatted());
 
         int move = _getch();
+        bool isExtended = false;
         if (move == 0 || move == 224 || move == -32) {
+            isExtended = true;
             move = _getch();
         }
 
-        switch (move) {
-            case 72:  // Up arrow
-            case 'w':
-            case 'W':
-                m_board.move(Direction::Up);
-                break;
-            case 80:  // Down arrow
-            case 's':
-            case 'S':
-                m_board.move(Direction::Down);
-                break;
-            case 75:  // Left arrow
-            case 'a':
-            case 'A':
-                m_board.move(Direction::Left);
-                break;
-            case 77:  // Right arrow
-            case 'd':
-            case 'D':
-                m_board.move(Direction::Right);
-                break;
-            case 'b':
-            case 'B':
-                m_timer.stop();
-                return;
+        int oldScore = m_board.getScore();
+        bool moved = false;
+
+        if (isExtended) {
+            switch (move) {
+                case 72:  // Up arrow
+                    moved = m_board.move(Direction::Up);
+                    break;
+                case 80:  // Down arrow
+                    moved = m_board.move(Direction::Down);
+                    break;
+                case 75:  // Left arrow
+                    moved = m_board.move(Direction::Left);
+                    break;
+                case 77:  // Right arrow
+                    moved = m_board.move(Direction::Right);
+                    break;
+            }
+        } else {
+            switch (move) {
+                case 'w':
+                case 'W':
+                    moved = m_board.move(Direction::Up);
+                    break;
+                case 's':
+                case 'S':
+                    moved = m_board.move(Direction::Down);
+                    break;
+                case 'a':
+                case 'A':
+                    moved = m_board.move(Direction::Left);
+                    break;
+                case 'd':
+                case 'D':
+                    moved = m_board.move(Direction::Right);
+                    break;
+                case 'm':
+                case 'M':
+                    Audio::toggleBGM();
+                    break;
+                case 'b':
+                case 'B':
+                    m_timer.stop();
+                    Audio::stopBGM();
+                    return;
+            }
+        }
+
+        if (moved) {
+            if (m_board.getScore() > oldScore) {
+                Audio::playSFX(Audio::SFX::Merge);
+            } else {
+                Audio::playSFX(Audio::SFX::Move);
+            }
         }
     }
 }
