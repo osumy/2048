@@ -104,12 +104,12 @@ void renderMainMenu(char selected, bool showHelp) {
     std::ostringstream out;
     out << Theme::homeCursor();
 
-    const std::string bannerLine1 = "  ██████╗   ██████╗  ██╗  ██╗  ██████╗ ";
-    const std::string bannerLine2 = " ╚════██╗  ██╔═████╗ ██║  ██║ ██╔════╝ ";
-    const std::string bannerLine3 = "  █████╔╝  ██║██╔██║ ███████║ ╚█████╗  ";
-    const std::string bannerLine4 = " ██╔═══╝   ████╔╝██║ ╚════██║  ╚═══██╗ ";
-    const std::string bannerLine5 = " ███████╗  ╚██████╔╝      ██║ ██████╔╝ ";
-    const std::string bannerLine6 = " ╚══════╝   ╚═════╝       ╚═╝ ╚═════╝  ";
+    const std::string bannerLine1 = "   ██████╗    ██████╗   ██╗  ██╗    ██████╗ ";
+    const std::string bannerLine2 = "  ╚════██╗   ██╔═████╗  ██║  ██║   ██╔═══██╗";
+    const std::string bannerLine3 = "   █████╔╝   ██║██╔██║  ███████║   ╚██████╔╝";
+    const std::string bannerLine4 = "  ██╔═══╝    ████╔╝██║  ╚════██║   ██╔═══██╗";
+    const std::string bannerLine5 = "  ███████╗   ╚██████╔╝       ██║   ╚██████╔╝";
+    const std::string bannerLine6 = "  ╚══════╝    ╚═════╝        ╚═╝    ╚═════╝ ";
 
     auto printBanner = [&](const std::string& line, Theme::Color col) {
         out << "   " << Theme::fg(col) << Theme::bold() << line << Theme::reset() << "\n";
@@ -123,9 +123,7 @@ void renderMainMenu(char selected, bool showHelp) {
     printBanner(bannerLine5, {255, 42, 180});
     printBanner(bannerLine6, {255, 42, 141});
 
-    out << "\n";
-    out << "      " << Theme::fg(Theme::NEON_AMBER) << Theme::bold()
-        << "[  RETRO ARCADE CHIPTUNE EDITION  ]" << Theme::reset() << "\n\n";
+    out << "\n\n";
 
     auto renderButton = [&](const std::string& label, bool isSelected) {
         int btnWidth = 34;
@@ -156,12 +154,12 @@ void renderMainMenu(char selected, bool showHelp) {
 
     out << "\n";
     if (showHelp) {
-        out << "   " << Theme::fg(Theme::NEON_AMBER)
-            << "▶ Use [W/S] or Arrow keys to select, [ENTER] to confirm"
-            << Theme::reset() << "    \n";
+        out << "        " << Theme::fg(Theme::NEON_AMBER)
+            << "Use [W/S] or [Arrows] to select"
+            << Theme::reset() << "        \n";
     } else {
-        out << "   " << Theme::fg(Theme::FG_MUTED)
-            << "  Navigate: [W/S] or [↑/↓]  •  Confirm: [ENTER]"
+        out << "       " << Theme::fg(Theme::FG_MUTED)
+            << "[W/S] Navigate  •  [ENTER] Select"
             << Theme::reset() << "        \n";
     }
     out << "\n";
