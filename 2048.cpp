@@ -22,66 +22,9 @@ struct Player {  // player data
 	vector<vector<int>> board;
 };
 
-///////////////////////////////////
-// Timer
-///////////////////////////////////
+#include "Timer.hpp"
 
-atomic<bool> timerRunning{false};
-atomic<bool> timeIsUp{false};
-atomic<int> remainingSeconds{0};
-thread timerThread;
-
-void timerWorker() {
-    while (timerRunning.load()) {
-        this_thread::sleep_for(chrono::seconds(1));
-        if (!timerRunning.load()) {
-            break;
-        }
-        int currentSec = remainingSeconds.load();
-        if (currentSec > 0) {
-            remainingSeconds.store(currentSec - 1);
-        } else {
-            timeIsUp.store(true);
-            timerRunning.store(false);
-            break;
-        }
-    }
-}
-
-void startTimer(int minutes, int seconds = 0) {
-    if (timerRunning.load()) {
-        timerRunning.store(false);
-    }
-    if (timerThread.joinable()) {
-        timerThread.join();
-    }
-    remainingSeconds.store(minutes * 60 + seconds);
-    timeIsUp.store(false);
-    timerRunning.store(true);
-    timerThread = thread(timerWorker);
-}
-
-void stopTimer() {
-    if (timerRunning.load()) {
-        timerRunning.store(false);
-    }
-    if (timerThread.joinable()) {
-        timerThread.join();
-    }
-}
-
-bool isTimeUp() {
-    return timeIsUp.load();
-}
-
-string remaningGameTime(){
-    int total = remainingSeconds.load();
-    if (total < 0) total = 0;
-    int m = total / 60;
-    int s = total % 60;
-    string str = to_string(m) + ":" + (s < 10 ? "0" : "") + to_string(s);
-    return str;
-}
+GameTimer gameTimer;
 
 Player pl;
 int bestScore = 0;
@@ -550,7 +493,7 @@ void mLeft(vector<vector<int>>& board, int& score, int n); // move left and merg
 
 // game loop
 void game(){
-    startTimer(5, 0);
+    gameTimer.start(5, 0);
 
     int c = 0; // one time say "Do you want to continue playing?"
     while (true){
@@ -564,7 +507,7 @@ void game(){
                 cout << "\u001b[93m >>\u001b[36m Do you want to continue playing? (y/n)\u001b[96m" << endl << " >> ";
                 char choose = getch();
                 if (choose == 'n'){
-                    stopTimer();
+                    gameTimer.stop();
                     return;
                 }
                 else {
@@ -580,21 +523,21 @@ void game(){
             cout << endl << "\u001b[91m Game Over" << endl << endl;
             cout << "\u001b[93m >>\u001b[36m press any key to continue...";
             getch();
-            stopTimer();
+            gameTimer.stop();
             return;
         }
 
         refresh(dig(findBiggest()), pl.n, pl.board); // print the board each turn
 
-        if (isTimeUp()){
+        if (gameTimer.isTimeUp()){
             system("cls");
             cout << "\u001b[91m Game Over";
             this_thread::sleep_for(1000ms);
-            stopTimer();
+            gameTimer.stop();
             return;
         }
 
-        cout << endl << " " << remaningGameTime();
+        cout << endl << " " << gameTimer.getRemainingFormatted();
         cout << endl << endl << "  ";
         char move = getch();
         vector<vector<int>> temp = pl.board;
@@ -625,7 +568,7 @@ void game(){
                 randNumGen();
             break;
         case 'b':
-            stopTimer();
+            gameTimer.stop();
             return;
         }
     }
