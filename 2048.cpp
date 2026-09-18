@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <ctime>
 #include <cstdlib>
-//#include <conio.h>
+#include <conio.h>
+#include <windows.h>
 #include <chrono>
 #include <thread>
 #include <string>
@@ -583,7 +584,7 @@ void game(){
                 cout << "\u001b[93m >>\u001b[36m Do you want to continue playing? (y/n)\u001b[96m" << endl << " >> ";
                 char choose = getch();
                 if (choose == 'n'){
-                    TerminateThread(timerThread.native_handle(), 1);
+                    TerminateThread((HANDLE)timerThread.native_handle(), 1);
                     timerThread.detach();
                     return;
                 }
@@ -600,7 +601,7 @@ void game(){
             cout << endl << "\u001b[91m Game Over" << endl << endl;
             cout << "\u001b[93m >>\u001b[36m press any key to continue...";
             getch();
-            TerminateThread(timerThread.native_handle(), 1);
+            TerminateThread((HANDLE)timerThread.native_handle(), 1);
             timerThread.detach();
             return;
         }
@@ -611,7 +612,7 @@ void game(){
             system("cls");
             cout << "\u001b[91m Game Over";
             this_thread::sleep_for(1000ms);
-            TerminateThread(timerThread.native_handle(), 1);
+            TerminateThread((HANDLE)timerThread.native_handle(), 1);
             timerThread.detach();
             return;
         }
@@ -653,7 +654,7 @@ void game(){
                 randNumGen();
             break;
         case 'b':
-            TerminateThread(timerThread.native_handle(), 1);
+            TerminateThread((HANDLE)timerThread.native_handle(), 1);
             timerThread.detach();
             return;
         }
