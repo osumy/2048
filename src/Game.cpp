@@ -49,6 +49,11 @@ void Game::run() {
                     choice = (choice == 'n') ? 'l' : (choice == 'l' ? 'e' : 'n');
                     break;
 
+                case 'm':
+                case 'M':
+                    Audio::toggleBGM();
+                    break;
+
                 case 13:  // Enter
                 case 32:  // Space
                     if (choice == 'e') {
@@ -228,7 +233,7 @@ void Game::playGame() {
                     break;
                 case 'm':
                 case 'M':
-                    Audio::toggleSFX();
+                    Audio::toggleBGM();
                     break;
                 case 'b':
                 case 'B':

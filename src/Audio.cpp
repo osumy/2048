@@ -2,6 +2,8 @@
 #include <vector>
 #include <cmath>
 #include <cstdint>
+#include <string>
+#include <filesystem>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -15,6 +17,8 @@ namespace Audio {
 
 static bool s_initialized = false;
 static bool s_sfxEnabled = true;
+static bool s_bgmOpened = false;
+static bool s_bgmPlaying = false;
 
 #ifdef _WIN32
 static std::vector<uint8_t> s_moveWav;
@@ -83,6 +87,35 @@ static std::vector<uint8_t> createWav(int sampleRate, int durationMs, int freq1,
     wav.insert(wav.end(), pcm.begin(), pcm.end());
     return wav;
 }
+
+static std::string findBgmPath() {
+    namespace fs = std::filesystem;
+    const std::string filename = "mondamusic-8-bit-retro.mp3";
+
+    std::error_code ec;
+    // 1. Current working directory
+    if (fs::exists(filename, ec)) {
+        return fs::absolute(filename, ec).string();
+    }
+
+    // 2. Directory containing 2048.exe
+    char exePathBuf[MAX_PATH];
+    if (GetModuleFileNameA(NULL, exePathBuf, MAX_PATH) > 0) {
+        fs::path exeDir = fs::path(exePathBuf).parent_path();
+        fs::path candidate = exeDir / filename;
+        if (fs::exists(candidate, ec)) {
+            return candidate.string();
+        }
+
+        // 3. Parent directory (e.g. running from build/)
+        fs::path parentCandidate = exeDir.parent_path() / filename;
+        if (fs::exists(parentCandidate, ec)) {
+            return parentCandidate.string();
+        }
+    }
+
+    return "";
+}
 #endif
 
 void init() {
@@ -101,6 +134,17 @@ void init() {
     s_winWav = createWav(8000, 110, 1200, 1600);
     // GameOver: descending 90ms tone
     s_overWav = createWav(8000, 90, 450, 280);
+
+    // Initialize retro BGM track
+    std::string bgmPath = findBgmPath();
+    if (!bgmPath.empty()) {
+        std::string openCmd = "open \"" + bgmPath + "\" type mpegvideo alias bgm";
+        if (mciSendStringA(openCmd.c_str(), NULL, 0, NULL) == 0) {
+            s_bgmOpened = true;
+            mciSendStringA("setaudio bgm volume to 750", NULL, 0, NULL);
+            startBGM();
+        }
+    }
 #endif
 
     s_initialized = true;
@@ -110,10 +154,46 @@ void shutdown() {
     if (!s_initialized) return;
 
 #ifdef _WIN32
+    if (s_bgmOpened) {
+        mciSendStringA("stop bgm", NULL, 0, NULL);
+        mciSendStringA("close bgm", NULL, 0, NULL);
+        s_bgmOpened = false;
+        s_bgmPlaying = false;
+    }
     PlaySoundA(NULL, NULL, 0);
 #endif
 
     s_initialized = false;
+}
+
+void startBGM() {
+#ifdef _WIN32
+    if (s_bgmOpened) {
+        mciSendStringA("play bgm repeat", NULL, 0, NULL);
+        s_bgmPlaying = true;
+    }
+#endif
+}
+
+void stopBGM() {
+#ifdef _WIN32
+    if (s_bgmOpened) {
+        mciSendStringA("pause bgm", NULL, 0, NULL);
+        s_bgmPlaying = false;
+    }
+#endif
+}
+
+void toggleBGM() {
+    if (s_bgmPlaying) {
+        stopBGM();
+    } else {
+        startBGM();
+    }
+}
+
+bool isBGMPlaying() {
+    return s_bgmPlaying;
 }
 
 void toggleSFX() {

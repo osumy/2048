@@ -1,5 +1,6 @@
 #include "UI.hpp"
 #include "Theme.hpp"
+#include "Audio.hpp"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -158,9 +159,10 @@ void renderMainMenu(char selected, bool showHelp) {
             << "Use [W/S] or [Arrows] to select"
             << Theme::reset() << "        \n";
     } else {
-        out << "       " << Theme::fg(Theme::FG_MUTED)
-            << "[W/S] Navigate  •  [ENTER] Select"
-            << Theme::reset() << "        \n";
+        out << "   " << Theme::fg(Theme::FG_MUTED)
+            << "[W/S] Navigate  •  [ENTER] Select  •  [M] Music: "
+            << (Audio::isBGMPlaying() ? Theme::fg(Theme::NEON_GREEN) + "ON" : Theme::fg(Theme::NEON_RED) + "OFF")
+            << Theme::reset() << "   \n";
     }
     out << "\n";
 
@@ -302,10 +304,12 @@ void renderBoard(const Board& board, int bestScore, const std::string& remaining
         << "Controls: " << Theme::fg(Theme::NEON_CYAN) << "[W/A/S/D / Arrows]"
         << Theme::fg(Theme::FG_MUTED) << " Slide  •  "
         << Theme::fg(Theme::NEON_AMBER) << "[M]"
-        << Theme::fg(Theme::FG_MUTED) << " SFX  •  "
+        << Theme::fg(Theme::FG_MUTED) << " Music: "
+        << (Audio::isBGMPlaying() ? Theme::fg(Theme::NEON_GREEN) + "ON" : Theme::fg(Theme::NEON_RED) + "OFF")
+        << Theme::fg(Theme::FG_MUTED) << "  •  "
         << Theme::fg(Theme::NEON_AMBER) << "[B]"
         << Theme::fg(Theme::FG_MUTED) << " Menu"
-        << Theme::reset() << "         \n";
+        << Theme::reset() << "      \n";
 
     std::cout << out.str() << std::flush;
 }

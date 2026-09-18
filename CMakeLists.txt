@@ -30,5 +30,11 @@ endif()
 
 if(WIN32)
     target_link_libraries(2048 PRIVATE winmm)
+    add_custom_command(TARGET 2048 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/mondamusic-8-bit-retro.mp3"
+        "$<TARGET_FILE_DIR:2048>/mondamusic-8-bit-retro.mp3"
+        COMMENT "Copying background music to target directory"
+    )
 endif()
 

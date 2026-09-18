@@ -35,7 +35,7 @@ A modern, terminal-based implementation of the classic **2048 puzzle game** writ
 - **Retro Arcade / Synthwave Aesthetic**: Redesigned 24-bit TrueColor terminal interface with glowing neon cards, stylish rounded frames, and gradient banners.
 - **Dynamic Tile Palette**: Distinct vibrant color styles for every tile rank (2 through 2048+), providing high visual clarity and arcade polish.
 - **Flicker-Free Rendering Engine**: Double-buffered stream output with ANSI cursor positioning eliminates console screen flashing.
-- **Arcade Sound Effects (SFX)**: Real-time 8-bit synth sound effects for tile movement clicks, tile merges, victory fanfares, and game over.
+- **Arcade Sound Effects & Retro BGM**: Integrated 8-bit retro background music looping seamlessly via Windows MCI alongside crisp real-time synth sound effects for tile movements, merges, win fanfare, and game over.
 - **Dual Controls Support**: Full navigation support for both **WASD** and **Arrow Keys** in gameplay and menus.
 - **Classic 2048 Mechanics**: Slide and merge tiles to reach the coveted 2048 tile and beyond.
 - **Customizable Grid Sizes**: Play on any $n \times n$ board (e.g., 3x3, 4x4, 5x5, 6x6, 8x8).
@@ -138,7 +138,7 @@ cmake --build build --config Release
 | <kbd>S</kbd> / <kbd>↓</kbd> | Move Down / Navigate Menu Down |
 | <kbd>A</kbd> / <kbd>←</kbd> | Move Left |
 | <kbd>D</kbd> / <kbd>→</kbd> | Move Right |
-| <kbd>M</kbd> | Toggle Sound Effects (Mute/Unmute) |
+| <kbd>M</kbd> | Toggle Retro Background Music (ON/OFF) |
 | <kbd>Enter</kbd> / <kbd>Space</kbd> | Select Menu Option |
 | <kbd>B</kbd> | Return to Main Menu |
 
