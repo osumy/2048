@@ -138,7 +138,6 @@ void Game::startNewGame() {
 void Game::playGame() {
     UI::resetScreen();
     m_timer.start(5, 0);
-    Audio::startBGM();
     bool askedContinue = false;
 
     while (true) {
@@ -151,7 +150,6 @@ void Game::playGame() {
             char choose = _getch();
             if (choose == 'n' || choose == 'N') {
                 m_timer.stop();
-                Audio::stopBGM();
                 return;
             }
             askedContinue = true;
@@ -159,7 +157,6 @@ void Game::playGame() {
         }
 
         if (m_board.isFull() && !m_board.canMove()) {
-            Audio::stopBGM();
             Audio::playSFX(Audio::SFX::GameOver);
             UI::renderBoard(m_board, m_bestScore, m_timer.getRemainingFormatted());
             UI::renderGameOver();
@@ -169,7 +166,6 @@ void Game::playGame() {
         }
 
         if (m_timer.isTimeUp()) {
-            Audio::stopBGM();
             Audio::playSFX(Audio::SFX::GameOver);
             UI::clearScreen();
             std::cout << "\n  " << Theme::fg(Theme::NEON_RED) << Theme::bold()
@@ -226,12 +222,11 @@ void Game::playGame() {
                     break;
                 case 'm':
                 case 'M':
-                    Audio::toggleBGM();
+                    Audio::toggleSFX();
                     break;
                 case 'b':
                 case 'B':
                     m_timer.stop();
-                    Audio::stopBGM();
                     return;
             }
         }

@@ -304,7 +304,7 @@ void renderBoard(const Board& board, int bestScore, const std::string& remaining
         << "Controls: " << Theme::fg(Theme::NEON_CYAN) << "[W/A/S/D / Arrows]"
         << Theme::fg(Theme::FG_MUTED) << " Slide  •  "
         << Theme::fg(Theme::NEON_AMBER) << "[M]"
-        << Theme::fg(Theme::FG_MUTED) << " Music  •  "
+        << Theme::fg(Theme::FG_MUTED) << " SFX  •  "
         << Theme::fg(Theme::NEON_AMBER) << "[B]"
         << Theme::fg(Theme::FG_MUTED) << " Menu"
         << Theme::reset() << "         \n";
@@ -335,7 +335,7 @@ void renderHowToPlay() {
     printGuideLine("  merge into one tile with doubled value!");
     printGuideLine("• Every move spawns a new 2 or 4 tile in an empty spot.");
     printGuideLine("• Merge your way up to create the legendary 2048 tile!");
-    printGuideLine("• Press [M] to toggle retro background music on/off.");
+    printGuideLine("• Press [M] to toggle retro sound effects on/off.");
     printGuideLine("• Press [B] at any time during play to return to menu.");
     printGuideLine("");
     printGuideLine("Are you ready to claim the high score?");
