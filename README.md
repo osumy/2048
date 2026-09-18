@@ -3,60 +3,158 @@
 <!-- Badges -->
 ![GitHub forks](https://img.shields.io/github/forks/osumy/2048)
 ![GitHub Repo stars](https://img.shields.io/github/stars/osumy/2048)
-![Static Badge](https://img.shields.io/badge/C++-blue.svg?style=flat&logo=c%2B%2B)
-[![GitHub pull-requests](https://img.shields.io/github/issues-pr/osumy/2048.svg)](https://GitHub.com/osumy/2048/pull)
-![GitHub contributors](https://img.shields.io/github/contributors/osumy/2048)
-[![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](https://lbesson.mit-license.org/)
+![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg?style=flat&logo=c%2B%2B)
+![CMake](https://img.shields.io/badge/build-CMake-064F8C.svg?style=flat&logo=cmake)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-
-<!-- Logo -->
 <div align="center">
-  <img src="2048.png" alt="2048 Game Screenshot" width=400 height=400>
+  <img src="2048.png" alt="2048 Game Screenshot" width="400" height="400">
 </div>
 
 ## 💡 Overview
 
-This project is a terminal-based 📟 implementation of the popular 2048 game 🕹️, developed using C++. Experience the classic puzzle challenge as you combine tiles and reach the elusive 2048 tile, all from your command line!
+A modern, terminal-based implementation of the classic **2048 puzzle game** written in **C++20**. Designed with clean software engineering practices, modular architecture, RAII memory management, and cross-platform CMake build support.
 
-<!-- Demo -->
+---
 
 ## 📑 Table of Contents
-- [Description](https://github.com/osumy/2048/tree/readme#-description)
-- [Getting Started](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#%EF%B8%8F-getting-started)
-- [Usage](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#usage)
-- [License](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#license)
-- [Contact](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#contact)
-- [Acknowledgments](https://github.com/osumy/2048/tree/readme?tab=readme-ov-file#-acknowledgments)
+- [Features](#-features)
+- [Project Architecture](#-project-architecture)
+- [Prerequisites](#-prerequisites)
+- [Building and Running](#-building-and-running)
+- [How to Play](#-how-to-play)
+- [Controls](#-controls)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Acknowledgments](#-acknowledgments)
 
-## 📝 Description
+---
 
-2048 is a single-player puzzle game where players slide numbered tiles on a grid to combine them into larger numbers. Starting with two tiles numbered 2 or 4, the objective is to merge tiles by sliding them in any of the four directions (up, down, left, right) until reaching the coveted 2048 tile. Each move generates a new tile, increasing the challenge as the grid fills up. Strategic planning and foresight are key, as players must avoid getting stuck with no valid moves left. The game ends when either the player combines tiles to create the 2048 tile or the grid fills up completely without possible merges. It captures the essence of engaging puzzle-solving while continually challenging players to beat their highest scores.
+## ✨ Features
 
-### Features
+- **Classic 2048 Mechanics**: Slide and merge tiles to reach the coveted 2048 tile and beyond.
+- **Customizable Grid Sizes**: Play on any $n \times n$ board (e.g., 3x3, 4x4, 5x5, 6x6).
+- **Modern C++20 Architecture**: Modular structure decoupled into dedicated components (Board, UI, Timer, Leaderboard, Game Controller).
+- **Zero Memory Leaks**: Memory managed strictly via RAII and standard library containers (`std::vector`).
+- **Thread-Safe Countdown Timer**: Background asynchronous timer implemented with `std::atomic` signaling and clean thread joining.
+- **Persistent Leaderboard**: Tracks high scores per board size, automatically sorted and persisted to disk.
+- **Rich Terminal UI**: Rendered with ANSI escape codes and Unicode box-drawing characters for clean console presentation.
 
-- Classic 2048 gameplay
-- Console-based interface
-- Implemented using C++
+---
 
-## 🛠️ Getting Started
+## 🏛️ Project Architecture
 
+The codebase is organized into distinct, single-responsibility modules:
 
-* ### Prerequisites
+```
+2048/
+├── CMakeLists.txt          # Modern CMake build configuration
+├── include/                # Header files / interfaces
+│   ├── Board.hpp           # Grid representation, tile movement & merging
+│   ├── Game.hpp            # Game loop coordinator & input dispatcher
+│   ├── Leaderboard.hpp     # Score persistence & record sorting
+│   ├── Timer.hpp           # Thread-safe atomic countdown timer
+│   └── UI.hpp              # ANSI terminal rendering & menu components
+└── src/                    # Implementation files
+    ├── Board.cpp
+    ├── Game.cpp
+    ├── Leaderboard.cpp
+    ├── Timer.cpp
+    ├── UI.cpp
+    └── main.cpp            # Application entry point
+```
 
+---
 
-* ### Installation
+## 🛠️ Prerequisites
 
-## Usage
+Before building, ensure you have the following installed:
 
-## License
-Distributed under the MIT License. See LICENSE for more information.
+- **C++ Compiler** supporting **C++20**:
+  - GCC 11+ / MinGW-w64
+  - Clang 13+
+  - MSVC (Visual Studio 2019 version 16.11+)
+- **CMake** 3.20 or newer
+- **Build Tool** (Ninja or Make)
 
-## Contact
+---
 
-## Contributing
-Contributions are welcome! If you would like to contribute to this project, feel free to open an issue or submit a pull request
+## 🚀 Building and Running
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/osumy/2048.git
+cd 2048
+```
+
+### 2. Configure the build with CMake
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+```
+*(Optional: add `-G "Ninja"` or `-G "MinGW Makefiles"` if you are using specific generators).*
+
+### 3. Compile the project
+```bash
+cmake --build build --config Release
+```
+
+### 4. Run the game
+
+- **On Windows:**
+  ```powershell
+  .\build\2048.exe
+  ```
+- **On Linux / macOS:**
+  ```bash
+  ./build/2048
+  ```
+
+---
+
+## 🎮 How to Play
+
+1. Start a **New Game** from the main menu.
+2. Enter your player name and desired board size (default is 4 for $4 \times 4$).
+3. Use the directional keys to slide tiles across the board.
+4. When two tiles with the same number collide during a move, they **merge into one** with the sum of their values.
+5. Every valid move spawns a new tile (2 or 4) in an empty spot.
+6. Combine tiles until you create the **2048** tile to win! You can choose to keep playing to reach higher scores.
+7. The game ends when no legal moves remain or when the countdown timer expires.
+
+---
+
+## ⌨️ Controls
+
+| Key | Action |
+| :--- | :--- |
+| <kbd>W</kbd> / <kbd>↑</kbd> | Move Up / Navigate Menu Up |
+| <kbd>S</kbd> / <kbd>↓</kbd> | Move Down / Navigate Menu Down |
+| <kbd>A</kbd> / <kbd>←</kbd> | Move Left |
+| <kbd>D</kbd> / <kbd>→</kbd> | Move Right |
+| <kbd>Enter</kbd> / <kbd>Space</kbd> | Select Menu Option |
+| <kbd>B</kbd> | Return to Main Menu |
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open an issue or submit a pull request:
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feat/AmazingFeature`)
+3. Commit your Changes (`git commit -m "feat(core): add amazing feature"`)
+4. Push to the Branch (`git push origin feat/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
+
+---
 
 ## 📚 Acknowledgments
-* [2048 (Wikipedia)](https://en.wikipedia.org/wiki/2048_(video_game))
 
-
+* [2048 Original Game by Gabriele Cirulli](https://github.com/gabrielecirulli/2048)
+* [2048 on Wikipedia](https://en.wikipedia.org/wiki/2048_(video_game))
