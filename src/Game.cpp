@@ -78,16 +78,17 @@ void Game::run() {
 
 void Game::preparePlayer() {
     UI::resetScreen();
+    std::string ind = UI::getIndent(60);
 
-    std::cout << "\n  " << Theme::fg(Theme::NEON_CYAN) << "╭─────────────────── PLAYER REGISTRATION ──────────────────╮" << Theme::reset() << "\n";
-    std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset()
+    std::cout << "\n" << ind << Theme::fg(Theme::NEON_CYAN) << "╭─────────────────── PLAYER REGISTRATION ──────────────────╮" << Theme::reset() << "\n";
+    std::cout << ind << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset()
               << Theme::fg(Theme::NEON_AMBER) << Theme::bold()
               << "                  ENTER YOUR PLAYER NAME                  "
               << Theme::reset() << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset() << "\n";
-    std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "╰──────────────────────────────────────────────────────────╯" << Theme::reset() << "\n\n";
+    std::cout << ind << Theme::fg(Theme::NEON_CYAN) << "╰──────────────────────────────────────────────────────────╯" << Theme::reset() << "\n\n";
 
     while (true) {
-        std::cout << "  " << Theme::fg(Theme::NEON_PINK) << "▶ "
+        std::cout << ind << Theme::fg(Theme::NEON_PINK) << "▶ "
                   << Theme::fg(Theme::FG_BRIGHT) << "Player Name: " << Theme::fg(Theme::NEON_CYAN);
         std::string name;
         std::getline(std::cin, name);
@@ -99,12 +100,12 @@ void Game::preparePlayer() {
             m_playerName = name.substr(start, end - start + 1);
             break;
         }
-        std::cout << "  " << Theme::fg(Theme::NEON_RED) << "[!] Name cannot be empty! Please try again.\n" << Theme::reset();
+        std::cout << ind << Theme::fg(Theme::NEON_RED) << "[!] Name cannot be empty! Please try again.\n" << Theme::reset();
     }
 
     int n = 0;
     while (n < 2 || n > 8) {
-        std::cout << "\n  " << Theme::fg(Theme::NEON_PINK) << "▶ "
+        std::cout << "\n" << ind << Theme::fg(Theme::NEON_PINK) << "▶ "
                   << Theme::fg(Theme::FG_BRIGHT) << "Enter Board Size (2 - 8, default 4): " << Theme::fg(Theme::NEON_CYAN);
         std::string line;
         std::getline(std::cin, line);
@@ -119,7 +120,7 @@ void Game::preparePlayer() {
             n = 0;
         }
         if (n < 2 || n > 8) {
-            std::cout << "  " << Theme::fg(Theme::NEON_RED) << "[!] Invalid size! Please enter a number between 2 and 8.\n" << Theme::reset();
+            std::cout << ind << Theme::fg(Theme::NEON_RED) << "[!] Invalid size! Please enter a number between 2 and 8.\n" << Theme::reset();
         }
     }
     m_boardSize = n;
@@ -179,7 +180,8 @@ void Game::playGame() {
         if (m_timer.isTimeUp()) {
             Audio::playSFX(Audio::SFX::GameOver);
             UI::clearScreen();
-            std::cout << "\n  " << Theme::fg(Theme::NEON_RED) << Theme::bold()
+            std::string ind = UI::getIndent(26);
+            std::cout << "\n" << ind << Theme::fg(Theme::NEON_RED) << Theme::bold()
                       << "⌛ TIME EXPIRED! GAME OVER" << Theme::reset() << "\n";
             std::this_thread::sleep_for(std::chrono::milliseconds(1200));
             m_timer.stop();

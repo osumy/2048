@@ -6,6 +6,8 @@
 #include <vector>
 
 namespace UI {
+    int getTerminalWidth();
+    std::string getIndent(int contentWidth);
     void clearScreen();
     void resetScreen();
     void renderMainMenu(char selected, bool showHelp);
