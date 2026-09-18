@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Board.hpp"
 #include "Leaderboard.hpp"
@@ -7,6 +7,7 @@
 
 namespace UI {
     void clearScreen();
+    void resetScreen();
     void renderMainMenu(char selected, bool showHelp);
     void renderBoard(const Board& board, int bestScore, const std::string& remainingTime);
     void renderHowToPlay();

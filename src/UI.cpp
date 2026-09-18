@@ -1,13 +1,20 @@
-﻿#include "UI.hpp"
+#include "UI.hpp"
+#include "Theme.hpp"
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <cmath>
-#include <cstdlib>
+#include <algorithm>
+#include <string>
 
 namespace UI {
 
 void clearScreen() {
-    std::system("cls");
+    std::cout << Theme::homeCursor();
+}
+
+void resetScreen() {
+    std::cout << Theme::clearAll();
 }
 
 static int digitCount(int number) {
@@ -20,191 +27,337 @@ static int digitCount(int number) {
     return digs;
 }
 
-static void printMenuLine() {
-    std::cout << "\u001b[46m\u001b[93m\u2551";
-    for (int i = 0; i < 68; i++) std::cout << " ";
-    std::cout << "\u2551\u001b[0m\n";
+static std::string padCenter(const std::string& str, int width) {
+    int len = static_cast<int>(str.length());
+    if (len >= width) return str;
+    int left = (width - len) / 2;
+    int right = width - len - left;
+    return std::string(left, ' ') + str + std::string(right, ' ');
 }
 
-static void printButtonUpDown(bool isUp, bool isOn) {
-    std::cout << "\u001b[46m\u001b[93m\u2551";
-    for (int i = 0; i < 26; i++) std::cout << " ";
-
-    std::cout << "\u001b[97m";
-    if (isOn) std::cout << "\u001b[106m";
-    std::cout << (isUp ? "\u250F" : "\u2517");
-
-    for (int i = 0; i < 14; i++) std::cout << "\u2501";
-
-    if (isUp) {
-        std::cout << "\u2513\u001b[46m\u001b[93m";
-    } else {
-        std::cout << "\u251B\u001b[46m\u001b[93m";
+static std::string formatNumber(int val) {
+    std::string s = std::to_string(val);
+    int n = static_cast<int>(s.length());
+    if (n <= 3) return s;
+    std::string res;
+    int count = 0;
+    for (int i = n - 1; i >= 0; --i) {
+        res.push_back(s[i]);
+        count++;
+        if (count == 3 && i > 0) {
+            res.push_back(',');
+            count = 0;
+        }
     }
-
-    for (int i = 0; i < 26; i++) std::cout << " ";
-    std::cout << "\u2551\u001b[0m\n";
-}
-
-static void printMenuButton(const std::string& str, bool isOn) {
-    int space = (14 - static_cast<int>(str.length())) / 2;
-
-    printButtonUpDown(true, isOn);
-
-    std::cout << "\u001b[46m\u001b[93m\u2551";
-    if (isOn) {
-        for (int i = 0; i < 24; i++) std::cout << " ";
-        std::cout << ">>";
-    } else {
-        for (int i = 0; i < 26; i++) std::cout << " ";
-    }
-
-    std::cout << "\u001b[97m";
-    if (isOn) std::cout << "\u001b[106m";
-    std::cout << "\u2502";
-
-    for (int i = 0; i < space; i++) std::cout << " ";
-    std::cout << str;
-    for (int i = 0; i < space; i++) std::cout << " ";
-    std::cout << "\u2502\u001b[93m\u001b[46m";
-
-    if (isOn) {
-        std::cout << "<<";
-        for (int i = 0; i < 24; i++) std::cout << " ";
-    } else {
-        for (int i = 0; i < 26; i++) std::cout << " ";
-    }
-    std::cout << "\u2551\u001b[0m\n";
-
-    printButtonUpDown(false, isOn);
+    std::reverse(res.begin(), res.end());
+    return res;
 }
 
 void renderMainMenu(char selected, bool showHelp) {
-    std::cout << "\u001b[46m\u001b[93m\u2554";
-    for (int i = 0; i < 68; i++) std::cout << "\u2550";
-    std::cout << "\u2557\u001b[0m\n";
+    std::ostringstream out;
+    out << Theme::homeCursor();
 
-    printMenuLine();
-    std::cout << "\u001b[46m\u001b[93m\u2551            _______   ________   ___   ___   ________               \u2551\u001b[0m\n";
-    std::cout << "\u001b[46m\u001b[93m\u2551           /  ___  \\\\|\\   __  \\ |\\  \\ |\\  \\ |\\   __  \\              \u2551\u001b[0m\n";
-    std::cout << "\u001b[46m\u001b[93m\u2551          /__/|_/  //\\ \\  \\|\\  \\\\ \\  \\\\_\\  \\\\ \\  \\|\\  \\             \u2551\u001b[0m\n";
-    std::cout << "\u001b[46m\u001b[93m\u2551          |__|//  //  \\ \\  \\\\\\  \\\\ \\______  \\\\ \\   __  \\            \u2551\u001b[0m\n";
-    std::cout << "\u001b[46m\u001b[93m\u2551              /  //___ \\ \\  \\\\\\  \\\\|_____|\\  \\\\ \\  \\|\\  \\           \u2551\u001b[0m\n";
-    std::cout << "\u001b[46m\u001b[93m\u2551             |\\________\\\\ \\_______\\      \\ \\__\\\\ \\_______\\          \u2551\u001b[0m\n";
-    std::cout << "\u001b[46m\u001b[93m\u2551              \\|_______| \\|_______|       \\|__| \\|_______|          \u2551\u001b[0m\n";
-    printMenuLine();
-    printMenuLine();
+    const std::string bannerLine1 = "  ██████╗   ██████╗  ██╗  ██╗  ██████╗ ";
+    const std::string bannerLine2 = " ╚════██╗  ██╔═████╗ ██║  ██║ ██╔════╝ ";
+    const std::string bannerLine3 = "  █████╔╝  ██║██╔██║ ███████║ ╚█████╗  ";
+    const std::string bannerLine4 = " ██╔═══╝   ████╔╝██║ ╚════██║  ╚═══██╗ ";
+    const std::string bannerLine5 = " ███████╗  ╚██████╔╝      ██║ ██████╔╝ ";
+    const std::string bannerLine6 = " ╚══════╝   ╚═════╝       ╚═╝ ╚═════╝  ";
 
-    printMenuButton("New Game", selected == 'n');
-    printMenuLine();
-    printMenuButton("Leader Board", selected == 'l');
-    printMenuLine();
-    printMenuButton("Exit", selected == 'e');
-    printMenuLine();
+    auto printBanner = [&](const std::string& line, Theme::Color col) {
+        out << "   " << Theme::fg(col) << Theme::bold() << line << Theme::reset() << "\n";
+    };
 
+    out << "\n";
+    printBanner(bannerLine1, {0, 240, 255});
+    printBanner(bannerLine2, {40, 210, 255});
+    printBanner(bannerLine3, {120, 160, 255});
+    printBanner(bannerLine4, {190, 90, 255});
+    printBanner(bannerLine5, {255, 42, 180});
+    printBanner(bannerLine6, {255, 42, 141});
+
+    out << "\n";
+    out << "      " << Theme::fg(Theme::NEON_AMBER) << Theme::bold()
+        << "[  RETRO ARCADE CHIPTUNE EDITION  ]" << Theme::reset() << "\n\n";
+
+    auto renderButton = [&](const std::string& label, bool isSelected) {
+        int btnWidth = 34;
+        if (isSelected) {
+            out << "     " << Theme::fg(Theme::NEON_PINK) << "╭"
+                << std::string(btnWidth + 2, '-') << "╮" << Theme::reset() << "\n";
+            out << "     " << Theme::fg(Theme::NEON_PINK) << "│ "
+                << Theme::bg(Theme::BG_CARD) << Theme::fg(Theme::NEON_CYAN) << Theme::bold()
+                << "▶ " << padCenter(label, btnWidth - 4) << " ◀"
+                << Theme::reset() << Theme::fg(Theme::NEON_PINK) << " │" << Theme::reset() << "\n";
+            out << "     " << Theme::fg(Theme::NEON_PINK) << "╰"
+                << std::string(btnWidth + 2, '-') << "╯" << Theme::reset() << "\n";
+        } else {
+            out << "     " << Theme::fg(Theme::FG_MUTED) << "╭"
+                << std::string(btnWidth + 2, '-') << "╮" << Theme::reset() << "\n";
+            out << "     " << Theme::fg(Theme::FG_MUTED) << "│ "
+                << Theme::fg(Theme::FG_BRIGHT) << "  "
+                << padCenter(label, btnWidth - 4) << "  "
+                << Theme::reset() << Theme::fg(Theme::FG_MUTED) << " │" << Theme::reset() << "\n";
+            out << "     " << Theme::fg(Theme::FG_MUTED) << "╰"
+                << std::string(btnWidth + 2, '-') << "╯" << Theme::reset() << "\n";
+        }
+    };
+
+    renderButton("N E W   G A M E", selected == 'n');
+    renderButton("L E A D E R B O A R D", selected == 'l');
+    renderButton("E X I T", selected == 'e');
+
+    out << "\n";
     if (showHelp) {
-        std::cout << "\u001b[46m\u001b[93m\u2551 \u001b[97m Use w s  or  arrow up  arrow down\u001b[46m\u001b[93m";
-        for (int i = 0; i < 33; i++) std::cout << " ";
-        std::cout << "\u2551\u001b[0m\n";
+        out << "   " << Theme::fg(Theme::NEON_AMBER)
+            << "▶ Use [W/S] or Arrow keys to select, [ENTER] to confirm"
+            << Theme::reset() << "    \n";
+    } else {
+        out << "   " << Theme::fg(Theme::FG_MUTED)
+            << "  Navigate: [W/S] or [↑/↓]  •  Confirm: [ENTER]"
+            << Theme::reset() << "        \n";
     }
+    out << "\n";
 
-    std::cout << "\u001b[46m\u001b[93m\u255A";
-    for (int i = 0; i < 68; i++) std::cout << "\u2550";
-    std::cout << "\u255D\u001b[0m\n";
+    std::cout << out.str() << std::flush;
 }
 
 void renderBoard(const Board& board, int bestScore, const std::string& remainingTime) {
-    // Score box
-    std::cout << "\u001b[36m";
-    for (int i = 0; i < 23; i++) std::cout << "\u2550";
-    std::cout << "\nScore: \u001b[96m" << board.getScore() << "\n";
-    std::cout << "\u001b[36mBest Score: \u001b[96m" << bestScore << "\n";
-    std::cout << "\u001b[36m";
-    for (int i = 0; i < 23; i++) std::cout << "\u2550";
-    std::cout << "\n\n\n";
+    std::ostringstream out;
+    out << Theme::homeCursor();
 
     int n = board.getSize();
-    int len = digitCount(board.getBiggestTile());
+    int currentScore = board.getScore();
+    int biggestTile = board.getBiggestTile();
 
-    auto printLenLine = [len]() {
-        for (int j = 0; j < len + 2; j++) std::cout << "\u2501";
+    int cellWidth = std::max(7, digitCount(biggestTile) + 2);
+
+    // 1. Sleek Top Dashboard: SCORE | BEST | TIME
+    std::string sScore = formatNumber(currentScore);
+    std::string sBest = formatNumber(bestScore);
+    std::string sTime = remainingTime.empty() ? "ENDLESS" : remainingTime;
+
+    out << "\n";
+    out << "  " << Theme::fg(Theme::NEON_CYAN) << Theme::bold() << "✦ 2048 ARCADE" << Theme::reset()
+        << "  " << Theme::fg(Theme::FG_MUTED) << "•" << Theme::reset()
+        << "  " << Theme::fg(Theme::NEON_GREEN) << "MAX: " << biggestTile << Theme::reset() << "\n\n";
+
+    int cardW = 14;
+    auto cardTop = [&](int w) {
+        return Theme::fg(Theme::FG_MUTED) + "╭" + std::string(w, '-') + "╮" + Theme::reset();
+    };
+    auto cardBot = [&](int w) {
+        return Theme::fg(Theme::FG_MUTED) + "╰" + std::string(w, '-') + "╯" + Theme::reset();
     };
 
-    // First line
-    for (int i = 0; i < n; i++) {
-        std::cout << (i == 0 ? "\u250F" : "\u2533");
-        printLenLine();
-    }
-    std::cout << "\u2513\n";
+    out << "  " << cardTop(cardW) << "  " << cardTop(cardW) << "  " << cardTop(cardW) << "\n";
 
-    // Rows
-    for (int i = 0; i < n; i++) {
-        if (i > 0) {
-            for (int j = 0; j < n; j++) {
-                std::cout << (j == 0 ? "\u2523" : "\u254B");
-                printLenLine();
+    out << "  " << Theme::fg(Theme::FG_MUTED) << "│"
+        << Theme::fg(Theme::NEON_AMBER) << Theme::bold() << padCenter("SCORE", cardW)
+        << Theme::reset() << Theme::fg(Theme::FG_MUTED) << "│"
+        << "  " << Theme::fg(Theme::FG_MUTED) << "│"
+        << Theme::fg(Theme::NEON_PINK) << Theme::bold() << padCenter("BEST", cardW)
+        << Theme::reset() << Theme::fg(Theme::FG_MUTED) << "│"
+        << "  " << Theme::fg(Theme::FG_MUTED) << "│"
+        << Theme::fg(Theme::NEON_CYAN) << Theme::bold() << padCenter("TIME", cardW)
+        << Theme::reset() << Theme::fg(Theme::FG_MUTED) << "│\n";
+
+    out << "  " << Theme::fg(Theme::FG_MUTED) << "│"
+        << Theme::fg(Theme::FG_BRIGHT) << Theme::bold() << padCenter(sScore, cardW)
+        << Theme::reset() << Theme::fg(Theme::FG_MUTED) << "│"
+        << "  " << Theme::fg(Theme::FG_MUTED) << "│"
+        << Theme::fg(Theme::FG_BRIGHT) << Theme::bold() << padCenter(sBest, cardW)
+        << Theme::reset() << Theme::fg(Theme::FG_MUTED) << "│"
+        << "  " << Theme::fg(Theme::FG_MUTED) << "│"
+        << Theme::fg(Theme::FG_BRIGHT) << Theme::bold() << padCenter(sTime, cardW)
+        << Theme::reset() << Theme::fg(Theme::FG_MUTED) << "│\n";
+
+    out << "  " << cardBot(cardW) << "  " << cardBot(cardW) << "  " << cardBot(cardW) << "\n\n";
+
+    // 2. The Board Grid
+    auto borderCol = Theme::fg({70, 80, 115});
+
+    // Top border
+    out << "  " << borderCol << "╭";
+    for (int j = 0; j < n; ++j) {
+        for (int k = 0; k < cellWidth; ++k) out << "─";
+        if (j < n - 1) out << "┬";
+    }
+    out << "╮" << Theme::reset() << "\n";
+
+    bool tallCells = (n <= 5);
+
+    for (int i = 0; i < n; ++i) {
+        // Upper cell padding row
+        if (tallCells) {
+            out << "  " << borderCol << "│" << Theme::reset();
+            for (int j = 0; j < n; ++j) {
+                int val = board.getCell(i, j);
+                auto style = Theme::getTileStyle(val);
+                out << Theme::bg(style.bg) << std::string(cellWidth, ' ') << Theme::reset();
+                out << borderCol << "│" << Theme::reset();
             }
-            std::cout << "\u252B\n";
+            out << "\n";
         }
 
-        for (int j = 0; j < n; j++) {
-            std::cout << "\u2503";
+        // Center content row
+        out << "  " << borderCol << "│" << Theme::reset();
+        for (int j = 0; j < n; ++j) {
             int val = board.getCell(i, j);
-            int d = digitCount(val);
-            double tmp = (len - d) / 2.0;
-            std::cout << " ";
-            for (int k = 0; k < std::floor(tmp); k++) std::cout << " ";
-            std::cout << "\u001b[96m";
-            if (val != 0) std::cout << val;
-            else std::cout << " ";
-            std::cout << "\u001b[36m";
-            for (int k = 0; k < std::ceil(tmp); k++) std::cout << " ";
-            std::cout << " ";
+            auto style = Theme::getTileStyle(val);
+
+            std::string content;
+            if (val == 0) {
+                content = padCenter("·", cellWidth);
+            } else {
+                content = padCenter(std::to_string(val), cellWidth);
+            }
+
+            out << Theme::bg(style.bg)
+                << Theme::fg(style.fg);
+            if (style.bold) out << Theme::bold();
+            out << content << Theme::reset();
+            out << borderCol << "│" << Theme::reset();
         }
-        std::cout << "\u2503\n";
+        out << "\n";
+
+        // Lower cell padding row
+        if (tallCells) {
+            out << "  " << borderCol << "│" << Theme::reset();
+            for (int j = 0; j < n; ++j) {
+                int val = board.getCell(i, j);
+                auto style = Theme::getTileStyle(val);
+                out << Theme::bg(style.bg) << std::string(cellWidth, ' ') << Theme::reset();
+                out << borderCol << "│" << Theme::reset();
+            }
+            out << "\n";
+        }
+
+        // Row separator
+        if (i < n - 1) {
+            out << "  " << borderCol << "├";
+            for (int j = 0; j < n; ++j) {
+                for (int k = 0; k < cellWidth; ++k) out << "─";
+                if (j < n - 1) out << "┼";
+            }
+            out << "┤" << Theme::reset() << "\n";
+        }
     }
 
-    // Last line
-    for (int i = 0; i < n; i++) {
-        std::cout << (i == 0 ? "\u2517" : "\u253B");
-        printLenLine();
+    // Bottom border
+    out << "  " << borderCol << "╰";
+    for (int j = 0; j < n; ++j) {
+        for (int k = 0; k < cellWidth; ++k) out << "─";
+        if (j < n - 1) out << "┴";
     }
-    std::cout << "\u251B\n";
+    out << "╯" << Theme::reset() << "\n\n";
 
-    std::cout << "\n " << remainingTime << "\n\n  ";
+    // Footer bar
+    out << "  " << Theme::fg(Theme::FG_MUTED)
+        << "Controls: " << Theme::fg(Theme::NEON_CYAN) << "[W/A/S/D]"
+        << Theme::fg(Theme::FG_MUTED) << " or "
+        << Theme::fg(Theme::NEON_CYAN) << "[Arrows]"
+        << Theme::fg(Theme::FG_MUTED) << " Slide  •  "
+        << Theme::fg(Theme::NEON_AMBER) << "[B]"
+        << Theme::fg(Theme::FG_MUTED) << " Exit to Menu"
+        << Theme::reset() << "         \n";
+
+    std::cout << out.str() << std::flush;
 }
 
 void renderHowToPlay() {
-    clearScreen();
-    std::cout << "\u001b[36mHow to play?\n";
-    std::cout << "--------------------------------------------------------------\n";
-    std::cout << "\u001b[96mYou will see a nxn screen with some numbers in some houses.\n";
-    std::cout << "In each turn, you can move up, down, left and right with the wasd keys.\n";
-    std::cout << "The game will continue until it is no longer possible to move!\n\n";
-    std::cout << "(Press b to return to the menu)\n\n";
-    std::cout << "Press any key to continue...";
+    resetScreen();
+    std::ostringstream out;
+
+    out << "\n";
+    out << "  " << Theme::fg(Theme::NEON_CYAN) << "╭──────────────────────── HOW TO PLAY ────────────────────────╮" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset()
+        << Theme::fg(Theme::NEON_AMBER) << Theme::bold() << padCenter("2048 RETRO ARCADE GUIDE", 60)
+        << Theme::reset() << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_CYAN) << "├────────────────────────────────────────────────────────────┤" << Theme::reset() << "\n";
+
+    auto printGuideLine = [&](const std::string& text) {
+        out << "  " << Theme::fg(Theme::NEON_CYAN) << "│ " << Theme::reset()
+            << Theme::fg(Theme::FG_BRIGHT) << std::left << std::setw(58) << text
+            << Theme::reset() << Theme::fg(Theme::NEON_CYAN) << " │" << Theme::reset() << "\n";
+    };
+
+    printGuideLine("• Use [W/A/S/D] or Arrow Keys to slide all tiles.");
+    printGuideLine("• When two tiles with the same number touch, they");
+    printGuideLine("  merge into one tile with doubled value!");
+    printGuideLine("• Every move spawns a new 2 or 4 tile in an empty spot.");
+    printGuideLine("• Merge your way up to create the legendary 2048 tile!");
+    printGuideLine("• Press [B] at any time during play to return to menu.");
+    printGuideLine("");
+    printGuideLine("Are you ready to claim the high score?");
+
+    out << "  " << Theme::fg(Theme::NEON_CYAN) << "╰────────────────────────────────────────────────────────────╯" << Theme::reset() << "\n\n";
+    out << "  " << Theme::fg(Theme::NEON_PINK) << Theme::bold() << "▶ Press any key to continue..." << Theme::reset();
+
+    std::cout << out.str() << std::flush;
 }
 
 void renderWinnerPrompt() {
-    std::cout << "\n\u001b[92m Winner!\n\n";
-    std::cout << "\u001b[93m >>\u001b[36m Do you want to continue playing? (y/n)\u001b[96m\n >> ";
+    std::ostringstream out;
+    out << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "╔════════════════════════════════════════════════════════════╗" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "║" << Theme::reset()
+        << Theme::fg(Theme::NEON_AMBER) << Theme::bold()
+        << padCenter("★ ★ ★  V I C T O R Y !  ★ ★ ★", 60)
+        << Theme::reset() << Theme::fg(Theme::NEON_AMBER) << "║" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "║" << Theme::reset()
+        << Theme::fg(Theme::FG_BRIGHT)
+        << padCenter("YOU CREATED THE 2048 TILE!", 60)
+        << Theme::reset() << Theme::fg(Theme::NEON_AMBER) << "║" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "║" << Theme::reset()
+        << Theme::fg(Theme::NEON_CYAN)
+        << padCenter("Do you want to continue playing in endless mode? (y/n)", 60)
+        << Theme::reset() << Theme::fg(Theme::NEON_AMBER) << "║" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "╚════════════════════════════════════════════════════════════╝" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << " >> " << Theme::reset();
+
+    std::cout << out.str() << std::flush;
 }
 
 void renderGameOver() {
-    std::cout << "\n\u001b[91m Game Over\n\n";
-    std::cout << "\u001b[93m >>\u001b[36m press any key to continue...";
+    std::ostringstream out;
+    out << "\n";
+    out << "  " << Theme::fg(Theme::NEON_RED) << "╔════════════════════════════════════════════════════════════╗" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_RED) << "║" << Theme::reset()
+        << Theme::fg(Theme::NEON_RED) << Theme::bold()
+        << padCenter("☠   G A M E   O V E R   ☠", 60)
+        << Theme::reset() << Theme::fg(Theme::NEON_RED) << "║" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_RED) << "║" << Theme::reset()
+        << Theme::fg(Theme::FG_BRIGHT)
+        << padCenter("No more moves available on the board!", 60)
+        << Theme::reset() << Theme::fg(Theme::NEON_RED) << "║" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_RED) << "║" << Theme::reset()
+        << Theme::fg(Theme::FG_MUTED)
+        << padCenter("Press any key to view results...", 60)
+        << Theme::reset() << Theme::fg(Theme::NEON_RED) << "║" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_RED) << "╚════════════════════════════════════════════════════════════╝" << Theme::reset() << "\n";
+
+    std::cout << out.str() << std::flush;
 }
 
 int renderSizeSelection(const std::vector<int>& playedSizes) {
-    clearScreen();
-    std::cout << "\u001b[36mLeader Board\n";
-    for (int i = 0; i < 23; i++) std::cout << "\u2550";
-    std::cout << "\n\n\u001b[93m >>\u001b[36m Please select game board size\n";
+    resetScreen();
+    std::ostringstream out;
+
+    out << "\n";
+    out << "  " << Theme::fg(Theme::NEON_CYAN) << "╭──────────────────── SELECT BOARD SIZE ────────────────────╮" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset()
+        << Theme::fg(Theme::NEON_AMBER) << Theme::bold() << padCenter("Choose Grid Size for Leaderboard", 58)
+        << Theme::reset() << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_CYAN) << "╰───────────────────────────────────────────────────────────╯" << Theme::reset() << "\n\n";
 
     for (int size : playedSizes) {
-        std::cout << "\u001b[93m     >>\u001b[36m " << size << " x " << size << "\n";
+        out << "      " << Theme::fg(Theme::NEON_PINK) << "▶ "
+            << Theme::fg(Theme::FG_BRIGHT) << Theme::bold() << size << " x " << size
+            << Theme::reset() << "\n";
     }
-    std::cout << "\n\u001b[93m >> ";
+    out << "\n  " << Theme::fg(Theme::NEON_CYAN) << "Enter size (e.g. 4): " << Theme::reset();
+    std::cout << out.str() << std::flush;
 
     std::string ch;
     std::cin >> ch;
@@ -216,24 +369,68 @@ int renderSizeSelection(const std::vector<int>& playedSizes) {
 }
 
 void renderLeaderboard(const std::vector<PlayerRecord>& records, int boardSize) {
-    clearScreen();
-    std::cout << "\u001b[93m Name";
-    for (int i = 0; i < 46; i++) std::cout << " ";
-    std::cout << "Score";
-    for (int i = 0; i < 15; i++) std::cout << " ";
-    std::cout << "n x n\n";
+    resetScreen();
+    std::ostringstream out;
 
-    for (const auto& rec : records) {
-        std::cout << "\u001b[96m " << rec.name;
-        int len = static_cast<int>(rec.name.length());
-        for (int k = 0; k < 50 - len; k++) std::cout << " ";
-        std::cout << rec.score;
-        len = static_cast<int>(std::to_string(rec.score).length());
-        for (int k = 0; k < 20 - len; k++) std::cout << " ";
-        std::cout << boardSize << " x " << boardSize << "\n";
+    int tableWidth = 66;
+    out << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "╭" << std::string(tableWidth, '-') << "╮" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "│" << Theme::reset()
+        << Theme::fg(Theme::NEON_AMBER) << Theme::bold()
+        << padCenter("★ ★ ★   H A L L   O F   F A M E   ★ ★ ★", tableWidth)
+        << Theme::reset() << Theme::fg(Theme::NEON_AMBER) << "│" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "│" << Theme::reset()
+        << Theme::fg(Theme::NEON_CYAN)
+        << padCenter("Board Size: " + std::to_string(boardSize) + " x " + std::to_string(boardSize), tableWidth)
+        << Theme::reset() << Theme::fg(Theme::NEON_AMBER) << "│" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "├──────┬───────────────────────────────┬──────────────┬──────┤" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "│ "
+        << Theme::fg(Theme::FG_BRIGHT) << Theme::bold() << "RANK" << Theme::reset()
+        << Theme::fg(Theme::NEON_AMBER) << " │ "
+        << Theme::fg(Theme::FG_BRIGHT) << Theme::bold() << std::left << std::setw(29) << "PLAYER NAME" << Theme::reset()
+        << Theme::fg(Theme::NEON_AMBER) << " │ "
+        << Theme::fg(Theme::FG_BRIGHT) << Theme::bold() << std::right << std::setw(12) << "SCORE" << Theme::reset()
+        << Theme::fg(Theme::NEON_AMBER) << " │ "
+        << Theme::fg(Theme::FG_BRIGHT) << Theme::bold() << "GRID" << Theme::reset()
+        << Theme::fg(Theme::NEON_AMBER) << " │" << Theme::reset() << "\n";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "├──────┼───────────────────────────────┼──────────────┼──────┤" << Theme::reset() << "\n";
+
+    if (records.empty()) {
+        out << "  " << Theme::fg(Theme::NEON_AMBER) << "│" << Theme::reset()
+            << Theme::fg(Theme::FG_MUTED)
+            << padCenter("No records found for this board size yet!", tableWidth)
+            << Theme::reset() << Theme::fg(Theme::NEON_AMBER) << "│" << Theme::reset() << "\n";
+    } else {
+        int rank = 1;
+        for (const auto& rec : records) {
+            std::string rankStr = "#" + std::to_string(rank);
+            std::string nameDisplay = rec.name;
+            if (nameDisplay.length() > 27) nameDisplay = nameDisplay.substr(0, 24) + "...";
+
+            Theme::Color rankColor = (rank == 1) ? Theme::NEON_AMBER :
+                                     (rank == 2) ? Theme::Color{200, 210, 225} :
+                                     (rank == 3) ? Theme::Color{205, 127, 50} :
+                                                   Theme::FG_MUTED;
+
+            out << "  " << Theme::fg(Theme::NEON_AMBER) << "│ "
+                << Theme::fg(rankColor) << Theme::bold() << std::left << std::setw(4) << rankStr << Theme::reset()
+                << Theme::fg(Theme::NEON_AMBER) << " │ "
+                << Theme::fg(Theme::FG_BRIGHT) << std::left << std::setw(29) << nameDisplay << Theme::reset()
+                << Theme::fg(Theme::NEON_AMBER) << " │ "
+                << Theme::fg(Theme::NEON_GREEN) << Theme::bold() << std::right << std::setw(12) << formatNumber(rec.score) << Theme::reset()
+                << Theme::fg(Theme::NEON_AMBER) << " │ "
+                << Theme::fg(Theme::FG_MUTED) << boardSize << "x" << boardSize << Theme::reset()
+                << Theme::fg(Theme::NEON_AMBER) << "  │" << Theme::reset() << "\n";
+
+            rank++;
+            if (rank > 10) break;
+        }
     }
 
-    std::cout << "\nPress any key to continue...";
+    out << "  " << Theme::fg(Theme::NEON_AMBER) << "╰──────┴───────────────────────────────┴──────────────┴──────╯" << Theme::reset() << "\n\n";
+    out << "  " << Theme::fg(Theme::NEON_PINK) << Theme::bold() << "▶ Press any key to return to menu..." << Theme::reset();
+
+    std::cout << out.str() << std::flush;
 }
 
 } // namespace UI

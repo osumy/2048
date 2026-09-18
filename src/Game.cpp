@@ -1,5 +1,6 @@
-﻿#include "Game.hpp"
+#include "Game.hpp"
 #include "UI.hpp"
+#include "Theme.hpp"
 #include <iostream>
 #include <conio.h>
 #include <chrono>
@@ -11,6 +12,7 @@ Game::Game()
 }
 
 void Game::run() {
+    UI::resetScreen();
     char choice = 'n';
     bool showHelp = false;
 
@@ -18,7 +20,11 @@ void Game::run() {
         UI::clearScreen();
         UI::renderMainMenu(choice, showHelp);
 
-        char ch = _getch();
+        int ch = _getch();
+        if (ch == 0 || ch == 224 || ch == -32) {
+            ch = _getch();
+        }
+
         switch (ch) {
             case 72:  // Up arrow
             case 'w':
@@ -35,11 +41,14 @@ void Game::run() {
             case 13:  // Enter
             case 32:  // Space
                 if (choice == 'e') {
+                    UI::resetScreen();
                     return;
                 } else if (choice == 'n') {
                     startNewGame();
+                    UI::resetScreen();
                 } else if (choice == 'l') {
                     showLeaderboard();
+                    UI::resetScreen();
                 }
                 break;
 
@@ -51,40 +60,54 @@ void Game::run() {
 }
 
 void Game::preparePlayer() {
-    UI::clearScreen();
+    UI::resetScreen();
+
+    std::cout << "\n  " << Theme::fg(Theme::NEON_CYAN) << "╭──────────────────── PLAYER REGISTRATION ───────────────────╮" << Theme::reset() << "\n";
+    std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset()
+              << Theme::fg(Theme::NEON_AMBER) << Theme::bold()
+              << "              ENTER YOUR ARCADE TAG / NAME                   "
+              << Theme::reset() << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset() << "\n";
+    std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "╰────────────────────────────────────────────────────────────╯" << Theme::reset() << "\n\n";
 
     while (true) {
-        std::cout << "\u001b[93m >>\u001b[36m Please Enter your name: \u001b[96m";
+        std::cout << "  " << Theme::fg(Theme::NEON_PINK) << "▶ "
+                  << Theme::fg(Theme::FG_BRIGHT) << "Player Name: " << Theme::fg(Theme::NEON_CYAN);
         std::string name;
         std::getline(std::cin, name);
+        std::cout << Theme::reset();
         if (!name.empty()) {
             m_playerName = name;
             break;
         }
-        std::cout << "\u001b[91m INVALID!\n";
+        std::cout << "  " << Theme::fg(Theme::NEON_RED) << "⚠ Name cannot be empty! Please try again.\n" << Theme::reset();
     }
 
     int n = 0;
-    while (n < 2) {
-        std::cout << "\n\u001b[93m >>\u001b[36m Please Enter the game board size: \u001b[96m";
-        std::cin >> n;
-        if (n < 2) {
-            std::cout << "\u001b[91m INVALID!\n";
+    while (n < 2 || n > 8) {
+        std::cout << "\n  " << Theme::fg(Theme::NEON_PINK) << "▶ "
+                  << Theme::fg(Theme::FG_BRIGHT) << "Enter Board Size (2 - 8, default 4): " << Theme::fg(Theme::NEON_CYAN);
+        std::string line;
+        std::getline(std::cin, line);
+        std::cout << Theme::reset();
+        if (line.empty()) {
+            n = 4;
+            break;
+        }
+        try {
+            n = std::stoi(line);
+        } catch (...) {
+            n = 0;
+        }
+        if (n < 2 || n > 8) {
+            std::cout << "  " << Theme::fg(Theme::NEON_RED) << "⚠ Invalid size! Please enter a number between 2 and 8.\n" << Theme::reset();
         }
     }
     m_boardSize = n;
-    std::cin.ignore(10000, '\n'); // Clear trailing newline
 
     UI::renderHowToPlay();
     _getch();
 
-    // Loading animation
-    std::cout << "\n\n\u001b[92m Loading";
-    for (int i = 0; i < 3; i++) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        std::cout << ".";
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    UI::resetScreen();
 }
 
 void Game::startNewGame() {
@@ -101,6 +124,7 @@ void Game::startNewGame() {
 }
 
 void Game::playGame() {
+    UI::resetScreen();
     m_timer.start(5, 0);
     bool askedContinue = false;
 
@@ -116,7 +140,7 @@ void Game::playGame() {
                 return;
             }
             askedContinue = true;
-            UI::clearScreen();
+            UI::resetScreen();
         }
 
         if (m_board.isFull() && !m_board.canMove()) {
@@ -129,28 +153,37 @@ void Game::playGame() {
 
         if (m_timer.isTimeUp()) {
             UI::clearScreen();
-            std::cout << "\u001b[91m Game Over";
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::cout << "\n  " << Theme::fg(Theme::NEON_RED) << Theme::bold()
+                      << "⌛ TIME EXPIRED! GAME OVER" << Theme::reset() << "\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(1200));
             m_timer.stop();
             return;
         }
 
         UI::renderBoard(m_board, m_bestScore, m_timer.getRemainingFormatted());
 
-        char move = _getch();
+        int move = _getch();
+        if (move == 0 || move == 224 || move == -32) {
+            move = _getch();
+        }
+
         switch (move) {
+            case 72:  // Up arrow
             case 'w':
             case 'W':
                 m_board.move(Direction::Up);
                 break;
+            case 80:  // Down arrow
             case 's':
             case 'S':
                 m_board.move(Direction::Down);
                 break;
+            case 75:  // Left arrow
             case 'a':
             case 'A':
                 m_board.move(Direction::Left);
                 break;
+            case 77:  // Right arrow
             case 'd':
             case 'D':
                 m_board.move(Direction::Right);
