@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <chrono>
 #include <thread>
+#include <atomic>
 #include <string>
 #include <cmath>
 #include <fstream>
@@ -24,47 +25,60 @@ struct Player {  // player data
 // Timer
 ///////////////////////////////////
 
-struct Timer {
-    int h;
-    int m;
-    int s;
-    bool TSU; // time is up!
-};
+atomic<bool> timerRunning{false};
+atomic<bool> timeIsUp{false};
+atomic<int> remainingSeconds{0};
+thread timerThread;
 
-Timer t;
-
-// h:hour  m:minute s:second 
-void timer() {
-    while (true)
-    {
-        this_thread::sleep_for(999ms);
-    
-        if (t.s > 0)
-            t.s--;
-        else{
-            if (t.m > 0){
-                t.m--;
-                t.s = 59;
-            }
-            else{
-                if (t.h > 0){
-                    t.h--;
-                    t.m = 59;
-                    t.s = 59;
-                }
-                else{
-                    t.TSU = true;
-                    return;
-                }
-            }
+void timerWorker() {
+    while (timerRunning.load()) {
+        this_thread::sleep_for(chrono::seconds(1));
+        if (!timerRunning.load()) {
+            break;
+        }
+        int currentSec = remainingSeconds.load();
+        if (currentSec > 0) {
+            remainingSeconds.store(currentSec - 1);
+        } else {
+            timeIsUp.store(true);
+            timerRunning.store(false);
+            break;
         }
     }
 }
 
+void startTimer(int minutes, int seconds = 0) {
+    if (timerRunning.load()) {
+        timerRunning.store(false);
+    }
+    if (timerThread.joinable()) {
+        timerThread.join();
+    }
+    remainingSeconds.store(minutes * 60 + seconds);
+    timeIsUp.store(false);
+    timerRunning.store(true);
+    timerThread = thread(timerWorker);
+}
+
+void stopTimer() {
+    if (timerRunning.load()) {
+        timerRunning.store(false);
+    }
+    if (timerThread.joinable()) {
+        timerThread.join();
+    }
+}
+
+bool isTimeUp() {
+    return timeIsUp.load();
+}
+
 string remaningGameTime(){
-    string str = "";
-    str = str + to_string(t.m) + ":";
-    str = str + to_string(t.s);
+    int total = remainingSeconds.load();
+    if (total < 0) total = 0;
+    int m = total / 60;
+    int s = total % 60;
+    string str = to_string(m) + ":" + (s < 10 ? "0" : "") + to_string(s);
     return str;
 }
 
@@ -566,11 +580,7 @@ void mLeft(int** board, int& score, int n); // move left and merge
 
 // game loop
 void game(){
-    t.h = 0;
-    t.m = 5;
-    t.s = 0;
-    t.TSU = false;
-    thread timerThread(timer);
+    startTimer(5, 0);
 
     int c = 0; // one time say "Do you want to continue playing?"
     while (true){
@@ -584,8 +594,7 @@ void game(){
                 cout << "\u001b[93m >>\u001b[36m Do you want to continue playing? (y/n)\u001b[96m" << endl << " >> ";
                 char choose = getch();
                 if (choose == 'n'){
-                    TerminateThread((HANDLE)timerThread.native_handle(), 1);
-                    timerThread.detach();
+                    stopTimer();
                     return;
                 }
                 else {
@@ -601,19 +610,17 @@ void game(){
             cout << endl << "\u001b[91m Game Over" << endl << endl;
             cout << "\u001b[93m >>\u001b[36m press any key to continue...";
             getch();
-            TerminateThread((HANDLE)timerThread.native_handle(), 1);
-            timerThread.detach();
+            stopTimer();
             return;
         }
 
         refresh(dig(findBiggest()), pl.n, pl.board); // print the board each turn
 
-        if (t.TSU){
+        if (isTimeUp()){
             system("cls");
             cout << "\u001b[91m Game Over";
             this_thread::sleep_for(1000ms);
-            TerminateThread((HANDLE)timerThread.native_handle(), 1);
-            timerThread.detach();
+            stopTimer();
             return;
         }
 
@@ -654,8 +661,7 @@ void game(){
                 randNumGen();
             break;
         case 'b':
-            TerminateThread((HANDLE)timerThread.native_handle(), 1);
-            timerThread.detach();
+            stopTimer();
             return;
         }
     }
