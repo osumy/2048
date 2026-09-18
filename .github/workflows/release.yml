@@ -1,0 +1,121 @@
+﻿name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.target.os }}-${{ matrix.target.arch }})
+    runs-on: ${{ matrix.target.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - os: windows
+            arch: x64
+            runner: windows-latest
+            artifact: 2048-v1.1-windows-x64.zip
+          - os: linux
+            arch: x86_64
+            runner: ubuntu-latest
+            artifact: 2048-v1.1-linux-x86_64.tar.gz
+          - os: linux
+            arch: arm64
+            runner: ubuntu-latest
+            artifact: 2048-v1.1-linux-arm64.tar.gz
+          - os: macos
+            arch: universal
+            runner: macos-latest
+            artifact: 2048-v1.1-macos-universal.tar.gz
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux ARM64 cross-compiler)
+        if: matrix.target.os == 'linux' && matrix.target.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-aarch64-linux-gnu
+
+      - name: Configure CMake (Windows)
+        if: matrix.target.os == 'windows'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure CMake (Linux x86_64)
+        if: matrix.target.os == 'linux' && matrix.target.arch == 'x86_64'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure CMake (Linux ARM64)
+        if: matrix.target.os == 'linux' && matrix.target.arch == 'arm64'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++
+
+      - name: Configure CMake (macOS Universal)
+        if: matrix.target.os == 'macos'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+
+      - name: Build Project
+        run: |
+          cmake --build build --config Release --parallel
+
+      - name: Package Artifact (Windows)
+        if: matrix.target.os == 'windows'
+        shell: bash
+        run: |
+          mkdir -p dist
+          if [ -f build/Release/2048.exe ]; then
+            cp build/Release/2048.exe dist/
+          else
+            cp build/2048.exe dist/
+          fi
+          cp LICENSE README.md dist/
+          cd dist && 7z a "../${{ matrix.target.artifact }}" *
+
+      - name: Package Artifact (Unix)
+        if: matrix.target.os != 'windows'
+        run: |
+          mkdir -p dist
+          cp build/2048 dist/
+          cp LICENSE README.md dist/
+          tar -czvf "${{ matrix.target.artifact }}" -C dist .
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target.artifact }}
+          path: ${{ matrix.target.artifact }}
+
+  release:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
