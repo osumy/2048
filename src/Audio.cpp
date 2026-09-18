@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <filesystem>
+#include <fstream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -116,6 +117,44 @@ static std::string findBgmPath() {
 
     return "";
 }
+
+static std::string extractEmbeddedBgm() {
+    namespace fs = std::filesystem;
+    HRSRC hRes = FindResourceA(NULL, MAKEINTRESOURCEA(101), MAKEINTRESOURCEA(10)); // RT_RCDATA
+    if (!hRes) {
+        return "";
+    }
+    HGLOBAL hMem = LoadResource(NULL, hRes);
+    if (!hMem) {
+        return "";
+    }
+    DWORD resSize = SizeofResource(NULL, hRes);
+    const void* pResData = LockResource(hMem);
+    if (!pResData || resSize == 0) {
+        return "";
+    }
+
+    std::error_code ec;
+    fs::path tempDir = fs::temp_directory_path(ec);
+    if (ec) {
+        tempDir = fs::current_path();
+    }
+    fs::path tempFile = tempDir / "2048_mondamusic_retro.mp3";
+
+    if (fs::exists(tempFile, ec) && fs::file_size(tempFile, ec) == resSize) {
+        return tempFile.string();
+    }
+
+    std::ofstream out(tempFile, std::ios::binary);
+    if (out) {
+        out.write(reinterpret_cast<const char*>(pResData), resSize);
+        out.close();
+        if (fs::exists(tempFile, ec)) {
+            return tempFile.string();
+        }
+    }
+    return "";
+}
 #endif
 
 void init() {
@@ -137,6 +176,9 @@ void init() {
 
     // Initialize retro BGM track
     std::string bgmPath = findBgmPath();
+    if (bgmPath.empty()) {
+        bgmPath = extractEmbeddedBgm();
+    }
     if (!bgmPath.empty()) {
         std::string openCmd = "open \"" + bgmPath + "\" type mpegvideo alias bgm";
         if (mciSendStringA(openCmd.c_str(), NULL, 0, NULL) == 0) {
