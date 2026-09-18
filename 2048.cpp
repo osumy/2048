@@ -11,6 +11,7 @@
 #include <string>
 #include <cmath>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ struct Player {  // player data
 	string name;
 	int score;
 	int n;
-	int** board;
+	vector<vector<int>> board;
 };
 
 ///////////////////////////////////
@@ -329,7 +330,6 @@ void pressEnter(char ch){
     if (ch == 'n'){
         preparePlayer();
         save();
-        delete[] pl.board;
     }
     else if (ch == 'l'){
         printLeaderBoard();
@@ -365,51 +365,27 @@ int zeroFinder() {
 
 // put a random 2 or 4 in game
 void randNumGen() {
-    int empNum = zeroFinder(); // number of empty cells
-    int* I = new int[empNum];  // an array for saving the i of empty cells
-    int* J = new int[empNum];  // an array for saving the j of empty cells
-
-    int index = 0;
-    for (int i = 0; i < pl.n; i++)
-        for (int j = 0; j < pl.n; j++)
+    vector<pair<int, int>> emptyCells;
+    for (int i = 0; i < pl.n; i++) {
+        for (int j = 0; j < pl.n; j++) {
             if (pl.board[i][j] == 0) {
-                I[index] = i;
-                J[index] = j;
-                index++;
+                emptyCells.push_back({i, j});
             }
-
-    int randCell = rand() % empNum;
-
-    int randNum = rand() % 4;
-    switch (randNum)
-    {
-    case 0:
-        randNum = 2;
-        break;
-    case 1:
-        randNum = 2;
-        break;
-    case 2:
-        randNum = 2;
-        break;
-    case 3:
-        randNum = 4;
-        break;
+        }
     }
 
-    pl.board[I[randCell]][J[randCell]] = randNum;
-    delete[] I;
-    delete[] J;
+    if (emptyCells.empty())
+        return;
+
+    int randCell = rand() % emptyCells.size();
+    int randNum = (rand() % 4 == 3) ? 4 : 2;
+
+    pl.board[emptyCells[randCell].first][emptyCells[randCell].second] = randNum;
 }
 
 // create game matrix and put two random number
 void prepareGameBoard() {
-	pl.board = new int* [pl.n];
-	for (int i = 0; i < pl.n; i++) {
-		pl.board[i] = new int[pl.n];
-		for (int j = 0; j < pl.n; j++)
-			pl.board[i][j] = 0;
-	}
+    pl.board.assign(pl.n, vector<int>(pl.n, 0));
     randNumGen();
     randNumGen();
 }
@@ -475,9 +451,9 @@ void preparePlayer(){
 
     int count = recNum();
     ifstream bestScoreFileInput("rec.txt", ios::in);
-    if (!bestScoreFileInput.fail())
+    if (!bestScoreFileInput.fail() && count > 0)
     {
-        Player* players = new Player[count];
+        vector<Player> players(count);
         for (int i = 0; i < count; i++){
                 getline(bestScoreFileInput, players[i].name);
                 string score, n;
@@ -556,27 +532,21 @@ int dig(int number) {
     return digs;
 }
 
-// return true when two int** are the same
-bool isEqual(int** a, int** b) {
-    for (int i = 0; i < pl.n; i++)
-        for (int j = 0; j < pl.n; j++)
-            if (b[i][j] != a[i][j])
-                return false;
-    return true;
+// return true when two boards are the same
+bool isEqual(const vector<vector<int>>& a, const vector<vector<int>>& b) {
+    return a == b;
 }
 
-// copy an int** to another one
-void copyBoard(int** main, int** copy) {
-    for (int i = 0; i < pl.n; i++)
-        for (int j = 0; j < pl.n; j++)
-            copy[i][j] = main[i][j];
+// copy a board to another one
+void copyBoard(const vector<vector<int>>& main, vector<vector<int>>& copy) {
+    copy = main;
 }
 
-void refresh(int l, int n, int** board); // refresh the game each turn
-void mUp(int** board, int& score, int n); // move up and merge
-void mDown(int** board, int& score, int n); // move Down and merge
-void mRight(int** board, int& score, int n); // move right and merge
-void mLeft(int** board, int& score, int n); // move left and merge
+void refresh(int l, int n, const vector<vector<int>>& board); // refresh the game each turn
+void mUp(vector<vector<int>>& board, int& score, int n); // move up and merge
+void mDown(vector<vector<int>>& board, int& score, int n); // move Down and merge
+void mRight(vector<vector<int>>& board, int& score, int n); // move right and merge
+void mLeft(vector<vector<int>>& board, int& score, int n); // move left and merge
 
 // game loop
 void game(){
@@ -627,13 +597,7 @@ void game(){
         cout << endl << " " << remaningGameTime();
         cout << endl << endl << "  ";
         char move = getch();
-        int** temp = new int*[pl.n];
-        for (int i = 0; i < pl.n; i++) {
-            temp[i] = new int[pl.n];
-            for (int j = 0; j < pl.n; j++)
-                temp[i][j] = 0;
-        }
-        copyBoard(pl.board, temp);
+        vector<vector<int>> temp = pl.board;
         switch (move)
         {
         case 'w':
@@ -672,7 +636,7 @@ void game(){
 //////////////////////////////////////////
 
 int len;
-int** b;
+const vector<vector<int>>* b = nullptr;
 
 int digNum(int number) {
 	int digs = 0;
@@ -739,18 +703,18 @@ void printMiddleLine(int n) {
 }
 
 void printData(int i, int j) {
-	int d = digNum(b[i][j]);
+	int d = digNum((*b)[i][j]);
 	double tmp = (len - d) / 2.0;
 	cout << " ";
-	for (int i = 0; i < floor(tmp); i++)
+	for (int k = 0; k < floor(tmp); k++)
 		cout << " ";
     cout << "\u001b[96m";
-	if (b[i][j] != 0)
-		cout << b[i][j];
+	if ((*b)[i][j] != 0)
+		cout << (*b)[i][j];
 	else
 		cout << " ";
     cout << "\u001b[36m";
-	for (int i = 0; i < ceil(tmp); i++)
+	for (int k = 0; k < ceil(tmp); k++)
 		cout << " ";
 	cout << " ";
 }
@@ -779,9 +743,9 @@ void printBlocks(int n) {
 }
 
 // refresh the game each turn
-void refresh(int l, int n, int** board) {
+void refresh(int l, int n, const vector<vector<int>>& board) {
 	len = l;
-	b = board;
+	b = &board;
 	printBlocks(n);
 	printLastLine(n);
 }
@@ -791,7 +755,7 @@ void refresh(int l, int n, int** board) {
 //////////////////////////////////////////
 
 // move up and merge
-void mUp(int** board, int& score, int n) {
+void mUp(vector<vector<int>>& board, int& score, int n) {
     for (int j = 0;j < n;j++) // columns
     {
         // move up
@@ -819,7 +783,7 @@ void mUp(int** board, int& score, int n) {
 }
 
 // move Down and merge
-void mDown(int** board, int& score, int n) {
+void mDown(vector<vector<int>>& board, int& score, int n) {
     for (int j = 0;j < n;j++) // columns
     {
         // move down
@@ -847,7 +811,7 @@ void mDown(int** board, int& score, int n) {
 }
 
 // move right and merge
-void mRight(int** board, int& score, int n) {
+void mRight(vector<vector<int>>& board, int& score, int n) {
     for (int i = 0;i < n;i++) // rows
     {
         // move right
@@ -875,7 +839,7 @@ void mRight(int** board, int& score, int n) {
 }
 
 // move left and merge
-void mLeft(int** board, int& score, int n) {
+void mLeft(vector<vector<int>>& board, int& score, int n) {
     for (int i = 0;i < n;i++) // rows
     {
         // move left
@@ -906,12 +870,16 @@ void mLeft(int** board, int& score, int n) {
 // Save and Leader Board
 //////////////////////////////////////////
 
-int maxN; // The largest game board ever played size.
-void maxNFinder(Player* players, int count){
-    maxN =  players[0].n;
-    for (int i = 0; i < count; i++)
-        if (players[i].n > maxN)
-            maxN = players[i].n;
+int maxN = 0; // The largest game board ever played size.
+void maxNFinder(const vector<Player>& players){
+    if (players.empty()) {
+        maxN = 0;
+        return;
+    }
+    maxN = players[0].n;
+    for (const auto& p : players)
+        if (p.n > maxN)
+            maxN = p.n;
 }
 
 void save(){
@@ -941,19 +909,18 @@ int recNum(){
     return count;
 }
 
-void bubbleSort_Score(Player arr[], int n)
+void bubbleSort_Score(vector<Player>& arr)
 {
-    int i, j;
-    bool swapped;
-    for (i = 0; i < n - 1; i++) {
-        swapped = false;
-        for (j = 0; j < n - i - 1; j++) {
+    int n = arr.size();
+    for (int i = 0; i < n - 1; i++) {
+        bool swapped = false;
+        for (int j = 0; j < n - i - 1; j++) {
             if (arr[j].score < arr[j + 1].score) {
                 swap(arr[j], arr[j + 1]);
                 swapped = true;
             }
         }
-        if (swapped == false)
+        if (!swapped)
             break;
     }
 }
@@ -962,7 +929,7 @@ void bubbleSort_Score(Player arr[], int n)
 void sortRecFile(){
     int count = recNum();
     ifstream file("rec.txt", ios::in);
-    Player* players = new Player[count];
+    vector<Player> players(count);
     for (int i = 0; i < count; i++){
         if (file.is_open()){
             getline(file, players[i].name);
@@ -979,21 +946,18 @@ void sortRecFile(){
     fileEmp << "";
     fileEmp.close();
 
-    maxNFinder(players, count);
-    int x = maxN;
+    maxNFinder(players);
     int c = 0;
     for (int i = 2; i <= maxN; i++){
         ofstream fileSort("rec.txt", ios::app);
-        Player playersNSort[200];
-        int playersNSort_i = 0;
+        vector<Player> playersNSort;
         for (int j = 0; j < count; j++){
             if (players[j].n == i){
-                playersNSort[playersNSort_i] = players[j];
-                playersNSort_i++;
+                playersNSort.push_back(players[j]);
             }
         }
-        bubbleSort_Score(playersNSort, playersNSort_i);
-        for (int j = 0; j < playersNSort_i; j++){
+        bubbleSort_Score(playersNSort);
+        for (size_t j = 0; j < playersNSort.size(); j++){
             if (c != 0)
                 fileSort << endl;
             fileSort << playersNSort[j].name << endl << playersNSort[j].score << endl << playersNSort[j].n;
@@ -1004,13 +968,14 @@ void sortRecFile(){
 }
 
 // print the list of any n ever played and return the selected n
-int printLeaderBoardMenu(Player* players, int count){
+int printLeaderBoardMenu(const vector<Player>& players){
     system("cls");
     cout << "\u001b[36mLeader Board" << endl;
     for (int i = 0; i < 23; i++)
         cout << "\u2550";
     cout << endl << endl;
     cout << "\u001b[93m >>\u001b[36m Please select game board size" << endl;
+    int count = players.size();
     for (int i = 2; i <= maxN; i++){
         int c = 0;
         for (int j = 0; j < count; j++){
@@ -1031,7 +996,7 @@ void printLeaderBoard(){
     sortRecFile();
     int count = recNum();
     ifstream file("rec.txt", ios::in);
-    Player* players = new Player[count];
+    vector<Player> players(count);
     for (int i = 0; i < count; i++){
         if (file.is_open()){
             getline(file, players[i].name);
@@ -1043,7 +1008,7 @@ void printLeaderBoard(){
         }
     }
     file.close();
-    int selectedN = printLeaderBoardMenu(players, count);
+    int selectedN = printLeaderBoardMenu(players);
     system("cls");
 
     cout << "\u001b[93m Name";
@@ -1058,11 +1023,11 @@ void printLeaderBoard(){
         if (players[i].n == selectedN){
             cout << "\u001b[96m " << players[i].name;
             int len = players[i].name.length();
-            for (int i = 0; i < 50 - len; i++)
+            for (int k = 0; k < 50 - len; k++)
                 cout << " ";
             cout << players[i].score;
             len = to_string(players[i].score).length();
-            for (int i = 0; i < 20 - len; i++)
+            for (int k = 0; k < 20 - len; k++)
                 cout << " ";
             cout << players[i].n << " x " << players[i].n << endl;
         }
