@@ -35,11 +35,12 @@ A modern, terminal-based implementation of the classic **2048 puzzle game** writ
 - **Retro Arcade / Synthwave Aesthetic**: Redesigned 24-bit TrueColor terminal interface with glowing neon cards, stylish rounded frames, and gradient banners.
 - **Dynamic Tile Palette**: Distinct vibrant color styles for every tile rank (2 through 2048+), providing high visual clarity and arcade polish.
 - **Flicker-Free Rendering Engine**: Double-buffered stream output with ANSI cursor positioning eliminates console screen flashing.
-- **Arcade Sound Effects & Retro BGM**: Integrated 8-bit retro background music looping seamlessly via Windows MCI alongside crisp real-time synth sound effects for tile movements, merges, win fanfare, and game over.
+- **Arcade Sound Effects & Embedded Retro BGM**: Integrated 8-bit retro background music looping seamlessly alongside crisp real-time synth sound effects for tile movements, merges, win fanfare, and game over. The audio asset is embedded directly inside the binary as a resource, providing a self-contained single-executable distribution with zero extra file dependencies.
+- **Cross-Platform Compatibility**: Full native support for Windows, Linux, and macOS across x86_64 and ARM64 architectures.
 - **Dual Controls Support**: Full navigation support for both **WASD** and **Arrow Keys** in gameplay and menus.
 - **Classic 2048 Mechanics**: Slide and merge tiles to reach the coveted 2048 tile and beyond.
 - **Customizable Grid Sizes**: Play on any $n \times n$ board (e.g., 3x3, 4x4, 5x5, 6x6, 8x8).
-- **Modern C++20 Architecture**: Modular structure decoupled into dedicated components (Board, UI, Theme, Audio, Timer, Leaderboard, Game Controller).
+- **Modern C++20 Architecture**: Modular structure decoupled into dedicated components (Board, UI, Theme, Audio, Input, Timer, Leaderboard, Game Controller).
 - **Zero Memory Leaks**: Memory managed strictly via RAII and standard library containers (`std::vector`).
 - **Thread-Safe Countdown Timer**: Background asynchronous timer implemented with `std::atomic` signaling and clean thread joining.
 - **Persistent Leaderboard**: Arcade-style Hall of Fame tracking high scores per board size, automatically sorted and persisted to disk.
@@ -52,19 +53,22 @@ The codebase is organized into distinct, single-responsibility modules:
 
 ```
 2048/
-├── CMakeLists.txt          # Modern CMake build configuration (with WinMM audio linking)
+├── CMakeLists.txt          # Modern CMake build configuration
+├── resources.rc            # Windows resource file embedding audio asset
 ├── include/                # Header files / interfaces
 │   ├── Audio.hpp           # 8-bit retro BGM and SFX audio engine
 │   ├── Board.hpp           # Grid representation, tile movement & merging
-│   ├── Game.hpp            # Game loop coordinator & input dispatcher
+│   ├── Game.hpp            # Game loop coordinator
+│   ├── Input.hpp           # Cross-platform raw input dispatcher
 │   ├── Leaderboard.hpp     # Score persistence & record sorting
 │   ├── Theme.hpp           # 24-bit TrueColor palette, ANSI helpers & tile styles
 │   ├── Timer.hpp           # Thread-safe atomic countdown timer
 │   └── UI.hpp              # ANSI terminal rendering & arcade components
 └── src/                    # Implementation files
-    ├── Audio.cpp           # Native Windows MCI sequencer & MIDI sound synth
+    ├── Audio.cpp           # Native Windows MCI sequencer, embedded asset loader & synth
     ├── Board.cpp
     ├── Game.cpp
+    ├── Input.cpp           # Windows & POSIX termios input implementation
     ├── Leaderboard.cpp
     ├── Timer.cpp
     ├── UI.cpp              # Flicker-free renderer, menu, and board UI
