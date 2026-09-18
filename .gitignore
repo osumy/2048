@@ -1,0 +1,21 @@
+﻿# Build outputs
+*.exe
+*.o
+*.obj
+*.out
+
+# CMake
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# VS / VSCode
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Misc
+rec.txt
