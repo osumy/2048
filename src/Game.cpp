@@ -74,12 +74,12 @@ void Game::run() {
 void Game::preparePlayer() {
     UI::resetScreen();
 
-    std::cout << "\n  " << Theme::fg(Theme::NEON_CYAN) << "╭──────────────────── PLAYER REGISTRATION ───────────────────╮" << Theme::reset() << "\n";
+    std::cout << "\n  " << Theme::fg(Theme::NEON_CYAN) << "╭─────────────────── PLAYER REGISTRATION ──────────────────╮" << Theme::reset() << "\n";
     std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset()
               << Theme::fg(Theme::NEON_AMBER) << Theme::bold()
-              << "              ENTER YOUR ARCADE TAG / NAME                   "
+              << "               ENTER YOUR ARCADE TAG / NAME               "
               << Theme::reset() << Theme::fg(Theme::NEON_CYAN) << "│" << Theme::reset() << "\n";
-    std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "╰────────────────────────────────────────────────────────────╯" << Theme::reset() << "\n\n";
+    std::cout << "  " << Theme::fg(Theme::NEON_CYAN) << "╰──────────────────────────────────────────────────────────╯" << Theme::reset() << "\n\n";
 
     while (true) {
         std::cout << "  " << Theme::fg(Theme::NEON_PINK) << "▶ "
