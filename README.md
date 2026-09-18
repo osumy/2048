@@ -32,13 +32,18 @@ A modern, terminal-based implementation of the classic **2048 puzzle game** writ
 
 ## ✨ Features
 
+- **Retro Arcade / Synthwave Aesthetic**: Redesigned 24-bit TrueColor terminal interface with glowing neon cards, stylish rounded frames, and gradient banners.
+- **Dynamic Tile Palette**: Distinct vibrant color styles for every tile rank (2 through 2048+), providing high visual clarity and arcade polish.
+- **Flicker-Free Rendering Engine**: Double-buffered stream output with ANSI cursor positioning eliminates console screen flashing.
+- **8-Bit Retro Chiptune Soundtrack**: Built-in nostalgic Sega/Atari style background music played smoothly in a native background audio thread.
+- **Arcade Sound Effects (SFX)**: Real-time 8-bit synth sound effects for tile slides, tile merges, victory fanfares, and game over.
+- **Dual Controls Support**: Full navigation support for both **WASD** and **Arrow Keys** in gameplay and menus.
 - **Classic 2048 Mechanics**: Slide and merge tiles to reach the coveted 2048 tile and beyond.
-- **Customizable Grid Sizes**: Play on any $n \times n$ board (e.g., 3x3, 4x4, 5x5, 6x6).
-- **Modern C++20 Architecture**: Modular structure decoupled into dedicated components (Board, UI, Timer, Leaderboard, Game Controller).
+- **Customizable Grid Sizes**: Play on any $n \times n$ board (e.g., 3x3, 4x4, 5x5, 6x6, 8x8).
+- **Modern C++20 Architecture**: Modular structure decoupled into dedicated components (Board, UI, Theme, Audio, Timer, Leaderboard, Game Controller).
 - **Zero Memory Leaks**: Memory managed strictly via RAII and standard library containers (`std::vector`).
 - **Thread-Safe Countdown Timer**: Background asynchronous timer implemented with `std::atomic` signaling and clean thread joining.
-- **Persistent Leaderboard**: Tracks high scores per board size, automatically sorted and persisted to disk.
-- **Rich Terminal UI**: Rendered with ANSI escape codes and Unicode box-drawing characters for clean console presentation.
+- **Persistent Leaderboard**: Arcade-style Hall of Fame tracking high scores per board size, automatically sorted and persisted to disk.
 
 ---
 
@@ -48,20 +53,23 @@ The codebase is organized into distinct, single-responsibility modules:
 
 ```
 2048/
-├── CMakeLists.txt          # Modern CMake build configuration
+├── CMakeLists.txt          # Modern CMake build configuration (with WinMM audio linking)
 ├── include/                # Header files / interfaces
+│   ├── Audio.hpp           # 8-bit retro BGM and SFX audio engine
 │   ├── Board.hpp           # Grid representation, tile movement & merging
 │   ├── Game.hpp            # Game loop coordinator & input dispatcher
 │   ├── Leaderboard.hpp     # Score persistence & record sorting
+│   ├── Theme.hpp           # 24-bit TrueColor palette, ANSI helpers & tile styles
 │   ├── Timer.hpp           # Thread-safe atomic countdown timer
-│   └── UI.hpp              # ANSI terminal rendering & menu components
+│   └── UI.hpp              # ANSI terminal rendering & arcade components
 └── src/                    # Implementation files
+    ├── Audio.cpp           # Native Windows MCI sequencer & MIDI sound synth
     ├── Board.cpp
     ├── Game.cpp
     ├── Leaderboard.cpp
     ├── Timer.cpp
-    ├── UI.cpp
-    └── main.cpp            # Application entry point
+    ├── UI.cpp              # Flicker-free renderer, menu, and board UI
+    └── main.cpp            # Application entry point with console setup
 ```
 
 ---
@@ -131,6 +139,7 @@ cmake --build build --config Release
 | <kbd>S</kbd> / <kbd>↓</kbd> | Move Down / Navigate Menu Down |
 | <kbd>A</kbd> / <kbd>←</kbd> | Move Left |
 | <kbd>D</kbd> / <kbd>→</kbd> | Move Right |
+| <kbd>M</kbd> | Toggle Retro Background Music (Mute/Unmute) |
 | <kbd>Enter</kbd> / <kbd>Space</kbd> | Select Menu Option |
 | <kbd>B</kbd> | Return to Main Menu |
 
